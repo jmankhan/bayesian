@@ -11,7 +11,8 @@ public class BayesianView extends HypothesisView {
 	private static final long serialVersionUID = 1L;
 	private Color color;
 	private ScaleDirection dir;
-	public static ArrayList<ChildUpdateListener> listeners = new ArrayList<ChildUpdateListener>();
+	private static ArrayList<ChildUpdateListener> listeners = new ArrayList<ChildUpdateListener>();
+	private boolean isSelected;
 
 	public BayesianView() {
 		super();
@@ -19,6 +20,7 @@ public class BayesianView extends HypothesisView {
 	
 	public BayesianView(int x, int y, int w, int h) {
 		super(x,y,w,h);
+		isSelected = false;
 	}
 	
 	public BayesianView(int x, int y, int w, int h, Color c) {
@@ -36,7 +38,7 @@ public class BayesianView extends HypothesisView {
 		super(x,y,w,h);
 		this.color = c;
 		this.dir = dir;
-		
+		isSelected = false;
 	}
 	
 	public Color getColor() {
@@ -53,6 +55,14 @@ public class BayesianView extends HypothesisView {
 		updateListener();
 	}
 	
+	public boolean isSelected() {
+		return isSelected;
+	}
+
+	public void setSelected(boolean isSelected) {
+		this.isSelected = isSelected;
+	}
+
 	public void addUpdateListener(ChildUpdateListener l) {
 		listeners.add(l);
 	}

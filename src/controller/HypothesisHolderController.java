@@ -18,7 +18,7 @@ import view.HypothesisView;
  *          will not directly issue commands It will also instantiate the
  *          HypothesisControllers that belong to it and pass them their views
  *          and data It will receive events from them and pass them along
- *          
+ * 
  *          TODO:fix second mouse click on same target
  */
 public class HypothesisHolderController {
@@ -71,24 +71,22 @@ public class HypothesisHolderController {
 		public void mousePressed(MouseEvent e) {
 			super.mousePressed(e);
 			start = e.getPoint();
-			
+
 			HypothesisHolderView hhv = (HypothesisHolderView) e.getSource();
 			for (HypothesisView hv : hhv.getChildren()) {
-				if (hv.contains(start)) {
-					for (BayesianView bv : hv.getChildren()) {
-						if (bv.contains(start)) {
-							
-							target = bv;
-							System.out.println("found target");
-							dx = (int) (e.getX() - target.getX());
-							dy = (int) (e.getY() - target.getY());
-							
-						}
-					}
-					// the concept of inheritance makes sense, but i can only
-					// hope this works
-					if (target == null) {
-						target = (BayesianView) hv;
+				// go backwards so the top level view gets selected first
+				// in case of overlap
+				for (int i = hv.getChildren().size() - 1; i >= 0; i--) {
+					BayesianView bv = hv.getChildren().get(i);
+
+					if (bv.contains(start)) {
+						System.out.println("found target");
+						target = bv;
+						target.setSelected(true);
+						dx = (int) (e.getX() - target.getX());
+						dy = (int) (e.getY() - target.getY());
+
+						return;
 					}
 				}
 			}
@@ -98,9 +96,8 @@ public class HypothesisHolderController {
 		public void mouseDragged(MouseEvent e) {
 			super.mouseDragged(e);
 
-			if (target != null) {
+			if (target != null && target.isSelected()) {
 				target.setLocation((int) (e.getX() - dx), (int) (e.getY() - dy));
-
 				target.updateListener();
 			}
 		}
@@ -109,17 +106,19 @@ public class HypothesisHolderController {
 		public void mouseReleased(MouseEvent e) {
 			super.mouseReleased(e);
 
-			target.setLocation(
-					(int) (Utilities.cellSize * Math.round(target.getX()
-							/ Utilities.cellSize)),
-					(int) (Utilities.cellSize * Math.round(target.getY()
-							/ Utilities.cellSize)));
-			
-			target = null;
+			if (target != null && target.isSelected()) {
+				target.setLocation(
+						(int) (Utilities.cellSize * Math.round(target.getX()
+								/ Utilities.cellSize)),
+						(int) (Utilities.cellSize * Math.round(target.getY()
+								/ Utilities.cellSize)));
+			}
+			target.setSelected(false);
 			start = null;
 			dx = 0;
 			dy = 0;
 		}
 
 	}
+
 }
