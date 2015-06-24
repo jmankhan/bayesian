@@ -1,0 +1,53 @@
+package model;
+
+import java.util.HashMap;
+
+/**
+ * 
+ * @author Jalal
+ * @version 6/24/15
+ * This model will serve as a container for the BayesianModel by instantiating and easily accessing each individual model
+ */
+public class HypothesisModel {
+	
+	/**
+	 * Keep track of how many hypothesis models have been created. Make sure to decrement when no longer using a hypothesis
+	 */
+	public static int hypotheses = 1;
+	
+	private BayesianModel[] data;
+	
+	private HashMap<String, BayesianModel> dataMap;
+	
+	/**
+	 * Create default data
+	 */
+	public HypothesisModel() {
+		
+		dataMap = new HashMap<String, BayesianModel>();
+		
+		BayesianModel prh		= new BayesianModel.Builder("prh").symbol("Pr(H)").value(0.5).build();
+		BayesianModel prnh		= new BayesianModel.Builder("prnh").symbol("Pr(~H)").partner(prh).build();
+		BayesianModel preh		= new BayesianModel.Builder("preh").symbol("Pr(E|H)").value(0.5).build();
+		BayesianModel prneh 	= new BayesianModel.Builder("prneh").symbol("Pr(~E|H)").partner(preh).build();
+		BayesianModel prenh 	= new BayesianModel.Builder("prenh").symbol("Pr(E|~H)").value(0.5).build();
+		BayesianModel prnenh	= new BayesianModel.Builder("prnenh").symbol("Pr(~E|~H)").partner(prenh).build();
+		
+		BayesianModel[] data = {prh, prnh, preh, prneh, prenh, prnenh};
+		this.data = data;
+
+		for(BayesianModel m :data) {
+			dataMap.put(m.getName(), m);
+		}
+		
+		hypotheses++;
+	}
+	
+	public BayesianModel[] getData() {
+		return this.data;
+	}
+	
+	public HashMap<String, BayesianModel> getDataMap() {
+		return dataMap;
+	}
+}
