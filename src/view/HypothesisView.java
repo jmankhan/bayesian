@@ -4,6 +4,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 
+import event.ChildUpdateListener;
+
 /**
  * @author Jalal
  * @version 6/24/15
@@ -43,5 +45,10 @@ public class HypothesisView extends Rectangle {
 	
 	public ArrayList<BayesianView> getChildren() {
 		return this.childViews;
+	}
+	
+	public void updateListeners() {
+		for( ChildUpdateListener l : BayesianView.listeners)
+			l.updateRequest();
 	}
 }

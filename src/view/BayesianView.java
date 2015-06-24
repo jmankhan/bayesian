@@ -11,7 +11,7 @@ public class BayesianView extends HypothesisView {
 	private static final long serialVersionUID = 1L;
 	private Color color;
 	private ScaleDirection dir;
-	private static ArrayList<ChildUpdateListener> listeners = new ArrayList<ChildUpdateListener>();
+	public static ArrayList<ChildUpdateListener> listeners = new ArrayList<ChildUpdateListener>();
 
 	public BayesianView() {
 		super();
@@ -36,6 +36,7 @@ public class BayesianView extends HypothesisView {
 		super(x,y,w,h);
 		this.color = c;
 		this.dir = dir;
+		
 	}
 	
 	public Color getColor() {

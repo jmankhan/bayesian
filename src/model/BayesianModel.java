@@ -59,9 +59,9 @@ public class BayesianModel {
 		this.partner = partner;
 		if(partner.getPartner() == null || !partner.getPartner().equals(this)) {
 			partner.setPartner(this);
-			
-			if(!Double.isNaN(this.value)) {
-				partner.setValue(1.0 - this.value);
+
+			if(Double.isNaN(this.value)) {
+				this.setValue(1.0 - partner.getValue());
 			}
 		}
 		

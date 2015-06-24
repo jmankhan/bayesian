@@ -54,7 +54,7 @@ public class HypothesisController {
 		view.add(prhV);
 		childControllers.add(new BayesianController(prhV, prh));
 
-		BayesianModel prnh = dataMap.get("prh");
+		BayesianModel prnh = dataMap.get("prnh");
 		BayesianView prnhV = new BayesianView((int) (offX + prhV.getWidth()),
 				offY, (int) (maxWidth * prnh.getValue()), maxHeight, c[1],
 				ScaleDirection.RIGHT_LEFT);

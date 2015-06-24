@@ -1,6 +1,7 @@
 package controller;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -70,22 +71,25 @@ public class HypothesisHolderController {
 		public void mousePressed(MouseEvent e) {
 			super.mousePressed(e);
 			start = e.getPoint();
-
+			
 			HypothesisHolderView hhv = (HypothesisHolderView) e.getSource();
 			for (HypothesisView hv : hhv.getChildren()) {
 				if (hv.contains(start)) {
 					for (BayesianView bv : hv.getChildren()) {
 						if (bv.contains(start)) {
+							
 							target = bv;
+							System.out.println("found target");
 							dx = (int) (e.getX() - target.getX());
 							dy = (int) (e.getY() - target.getY());
-							continue;
+							
 						}
 					}
 					// the concept of inheritance makes sense, but i can only
 					// hope this works
-					if (target == null)
+					if (target == null) {
 						target = (BayesianView) hv;
+					}
 				}
 			}
 		}
@@ -112,8 +116,9 @@ public class HypothesisHolderController {
 							/ Utilities.cellSize)));
 			
 			target = null;
-			dx = -1;
-			dy = -1;
+			start = null;
+			dx = 0;
+			dy = 0;
 		}
 
 	}
