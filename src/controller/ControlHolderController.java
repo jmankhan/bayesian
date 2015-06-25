@@ -51,9 +51,14 @@ public class ControlHolderController implements ChildUpdateListener {
 		// add listener to combobox
 		combo.addActionListener(new ActionListener() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
+				JComboBox<String> box = (JComboBox<String>) e.getSource();
+				String item = (String) box.getSelectedItem();
+				int index= Integer.parseInt(item.substring(item.indexOf(' '))) - 1;
+				
+				//TODO: SELECT MODEL[INDEX] TO DISPLAY WITH CONTROLS
 			}
 
 		});
