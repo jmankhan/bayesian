@@ -12,7 +12,6 @@ import event.UpdateListener;
 public class BayesianView extends HypothesisView {
 	private static final long serialVersionUID = 1L;
 	private Color color;
-	private ScaleDirection dir;
 	private static ArrayList<UpdateListener> listeners = new ArrayList<UpdateListener>();
 
 	public BayesianView() {
@@ -27,18 +26,6 @@ public class BayesianView extends HypothesisView {
 		super(x,y,w,h);
 		this.color = c;
 	}
-
-	public BayesianView(int x, int y, int w, int h, ScaleDirection dir) {
-		super(x,y,w,h);
-		this.dir = dir;
-		color = Color.black;
-	}
-	
-	public BayesianView(int x, int y, int w, int h, Color c, ScaleDirection dir) {
-		super(x,y,w,h);
-		this.color = c;
-		this.dir = dir;
-	}
 	
 	public Color getColor() {
 		return color;
@@ -46,10 +33,6 @@ public class BayesianView extends HypothesisView {
 
 	public void setColor(Color color) {
 		this.color = color;
-	}
-	
-	public ScaleDirection getScaleDirection() {
-		return this.dir;
 	}
 	
 	public void draw(Graphics2D g) {

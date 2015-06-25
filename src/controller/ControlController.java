@@ -1,6 +1,7 @@
 package controller;
 
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -27,14 +28,18 @@ public class ControlController implements UpdateListener {
 		this.model = model;
 		
 		JSlider slider = view.getSlider();
+		slider.setValue((int) (model.getValue()*100)); 
 		slider.addChangeListener(new ChangeListener() {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				JSlider source = (JSlider) e.getSource();
+				JTextField field = view.getField();
+				
+				field.setText("" + source.getValue()/100.0);
 				model.setValue(source.getValue()/100.0);
 				
-				UpdateEvent event = new UpdateEvent(Request.VALUE_CHANGE, model.getValue());
+				UpdateEvent event = new UpdateEvent(Request.VALUE_CHANGE, model);
 				updateRequest(event);
 			}
 			

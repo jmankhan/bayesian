@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import misc.ScaleDirection;
 import misc.Utilities;
 import model.BayesianModel;
 import model.HypothesisModel;
@@ -24,9 +23,9 @@ public class HypothesisController implements UpdateListener {
 	private ArrayList<BayesianController> childControllers;
 	private int offX, offY, maxWidth, maxHeight;
 	private HypothesisView view;
-	
+
 	public HypothesisController(HypothesisView view, HypothesisModel model) {
-		
+
 		this.view = view;
 		childControllers = new ArrayList<BayesianController>();
 		setup(view, model);
@@ -46,6 +45,7 @@ public class HypothesisController implements UpdateListener {
 	public void setup(HypothesisView view, HypothesisModel model) {
 		HashMap<String, BayesianModel> dataMap = model.getDataMap();
 
+		//setup variables used to determine view placement
 		offX = (int) view.getX();
 		offY = (int) view.getY();
 		maxWidth = (int) view.getWidth();
@@ -53,78 +53,52 @@ public class HypothesisController implements UpdateListener {
 
 		Color[] c = Utilities.colors;
 
+		BayesianModel.MAX_WIDTH = maxWidth;
+		BayesianModel.MAX_HEIGHT = maxHeight;
+		
+		//create views based on model information
 		BayesianModel prh = dataMap.get("prh");
 		BayesianView prhV = new BayesianView(offX, offY,
-				(int) (maxWidth * prh.getValue()), maxHeight, c[0],
-				ScaleDirection.LEFT_RIGHT);
+				(int) (maxWidth * prh.getValue()), maxHeight, c[0]);
 		view.add(prhV);
-		childControllers.add(new BayesianController(prhV, prh));
+		BayesianController prhC = new BayesianController(prhV, prh);
 
 		BayesianModel preh = dataMap.get("preh");
 		BayesianView prehV = new BayesianView(offX, (int) (offY + maxHeight
 				* preh.getValue()), (int) prhV.getWidth(), (int) (offY
-				+ maxHeight - (offY + maxHeight * preh.getValue())), c[2],
-				ScaleDirection.BOTTOM_TOP);
+				+ maxHeight - (offY + maxHeight * preh.getValue())), c[1]);
 		view.add(prehV);
-		childControllers.add(new BayesianController(prehV, preh));
+		BayesianController prehC = new BayesianController(prehV, preh);
 
 		BayesianModel prneh = dataMap.get("prneh");
-		BayesianView prnehV = new BayesianView((int) prehV.getX(), offY,
-				(int) prhV.getWidth(), (int) (maxHeight * prneh.getValue()),
-				c[3], ScaleDirection.TOP_BOTTOM);
+		BayesianView prnehV = new BayesianView(offX, offY,
+				prhV.width, (int) (maxHeight * prneh.getValue()),
+				c[2]);
 		view.add(prnehV);
-		childControllers.add(new BayesianController(prnehV, prneh));
+		BayesianController prnehC = new BayesianController(prnehV, prneh);
 
+		//assign partners
+		prnehC.addPartner(prehC);
+		prehC.addPartner(prnehC);
+		
+		//add all to childControllers
+		childControllers.add(prhC);
+		childControllers.add(prehC);
+		childControllers.add(prnehC);
+		
+		//add this to global slider listeners
 		Utilities.sliderListeners.add(this);
-	}
-
-	public void handleScaling(BayesianController c) {
-		BayesianView view = c.getView();
-		BayesianModel model = c.getModel();
-
-		if (view.getScaleDirection() == ScaleDirection.TOP_BOTTOM) {
-			view.height = (int) (maxHeight * model.getValue());
-		}
-
-		else if (view.getScaleDirection() == ScaleDirection.BOTTOM_TOP) {
-			double currentHeight = view.getHeight();
-			double newHeight = maxHeight * model.getValue();
-
-			int dy = (int) (newHeight - currentHeight);
-			view.y -= dy;
-			view.height += dy;
-		}
-
-		else if (view.getScaleDirection() == ScaleDirection.LEFT_RIGHT) {
-			view.width = (int) (maxWidth * model.getValue());
-		}
-
-		else if (view.getScaleDirection() == ScaleDirection.RIGHT_LEFT) {
-			double currentWidth = view.getWidth();
-			double newWidth = maxWidth * model.getValue();
-
-			int dx = (int) (newWidth - currentWidth);
-
-			view.x -= dx;
-			view.width += dx;
-		}
-
-		if(model.hasPartners()) {
-			for(BayesianModel partner : model.getPartners()) {
-				partner.setValue(1.0 - model.getValue());
-			}
-		}
 	}
 
 	public HypothesisView getView() {
 		return this.view;
 	}
-	
+
 	@Override
 	public void updateRequest(UpdateEvent e) {
 		if (e.getRequest() == Request.VALUE_CHANGE) {
 			for (BayesianController c : childControllers) {
-				handleScaling(c);
+				c.update();
 			}
 		}
 	}

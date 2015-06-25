@@ -1,5 +1,6 @@
 package event;
 
+import model.BayesianModel;
 import model.HypothesisModel;
 
 public class UpdateEvent {
@@ -8,16 +9,16 @@ public class UpdateEvent {
 	}
 	
 	private Request req;
-	private double value;
+	private BayesianModel bModel;
 	private HypothesisModel hModel;
 	
 	public UpdateEvent(Request r) {
 		this.req = r;
 	}
 	
-	public UpdateEvent(Request r, double value) {
+	public UpdateEvent(Request r, BayesianModel b) {
 		this.req = r;
-		this.value = value;
+		this.bModel = b;
 	}
 	
 	public UpdateEvent(Request r, HypothesisModel h) {
@@ -29,8 +30,8 @@ public class UpdateEvent {
 		return this.req;
 	}
 	
-	public double getValue() {
-		return this.value;
+	public BayesianModel getBayesianModel() {
+		return this.bModel;
 	}
 	
 	public HypothesisModel getHypothesisModel() {

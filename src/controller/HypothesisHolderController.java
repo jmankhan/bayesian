@@ -27,7 +27,7 @@ public class HypothesisHolderController implements UpdateListener {
 
 	private ArrayList<HypothesisController> childControllers;
 	private HypothesisHolderView view;
-	
+
 	public HypothesisHolderController(HypothesisHolderView view,
 			ArrayList<HypothesisModel> model) {
 		Utilities.hypothesisListeners.add(this);
@@ -43,7 +43,7 @@ public class HypothesisHolderController implements UpdateListener {
 		// prepare view array
 		HypothesisView[] hViews = new HypothesisView[models.size()];
 
-		// initialize constants to place each view
+		// initialize constants to place each view, attempt to make is square-ish
 		int offX = Utilities.prefSize.width / HypothesisModel.hypotheses;
 		int offY = Utilities.prefSize.height / 4;
 		int height = Utilities.prefSize.height / 2;
@@ -68,21 +68,22 @@ public class HypothesisHolderController implements UpdateListener {
 
 	public void addNewHypothesis(HypothesisModel model) {
 
-		HypothesisView last = childControllers.get(childControllers.size()-1).getView();
+		HypothesisView last = childControllers.get(childControllers.size() - 1)
+				.getView();
 		int offX = last.x + last.width;
 		int offY = last.y;
 		int width = last.width;
 		int height = last.height;
-		
+
 		HypothesisView view = new HypothesisView(offX, offY, width, height);
 
 		this.view.add(view);
 		childControllers.add(new HypothesisController(view, model));
 	}
-	
+
 	@Override
 	public void updateRequest(UpdateEvent e) {
-		if(e.getRequest() == Request.NEW_HYPOTHESIS)
+		if (e.getRequest() == Request.NEW_HYPOTHESIS)
 			addNewHypothesis(e.getHypothesisModel());
 	}
 
