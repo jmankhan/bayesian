@@ -46,9 +46,4 @@ public class HypothesisView extends Rectangle {
 	public ArrayList<BayesianView> getChildren() {
 		return this.childViews;
 	}
-	
-	public void updateListeners() {
-		for( ChildUpdateListener l : BayesianView.listeners)
-			l.updateRequest();
-	}
 }

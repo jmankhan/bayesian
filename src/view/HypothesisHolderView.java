@@ -2,14 +2,13 @@ package view;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
 import misc.Utilities;
+import event.ChildUpdateEvent;
+import event.ChildUpdateEvent.Request;
 import event.ChildUpdateListener;
 
 /**
@@ -84,7 +83,8 @@ public class HypothesisHolderView extends JPanel implements ChildUpdateListener 
 	
 
 	@Override
-	public void updateRequest() {
-		repaint();
+	public void updateRequest(ChildUpdateEvent e) {
+		if(e.getRequest() == Request.REPAINT)
+			repaint();
 	}
 }

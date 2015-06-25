@@ -11,7 +11,20 @@ import view.BayesianView;
  */
 public class BayesianController {
 
+	BayesianView view;
+	BayesianModel model;
+	
 	public BayesianController(BayesianView view, BayesianModel model) {
-		
+		this.view = view;
+		this.model = model;
 	}
+
+	public BayesianView getView() {
+		return view;
+	}
+
+	public BayesianModel getModel() {
+		return model;
+	}
+	
 }

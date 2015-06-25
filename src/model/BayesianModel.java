@@ -1,5 +1,7 @@
 package model;
 
+import java.util.ArrayList;
+
 /**
  * 
  * @author Jalal
@@ -9,13 +11,13 @@ package model;
 public class BayesianModel {
 	private String name, symbol, description;
 	private double value;
-	private BayesianModel partner;
+	private ArrayList<BayesianModel> partners;
 	
 	private BayesianModel(Builder builder) {
 		this.name		= builder.name;
 		this.symbol		= builder.symbol;
 		this.value		= builder.value;
-		this.partner	= setPartner(builder.partner);
+		this.partners	= setPartners(builder.partners);
 		this.description= builder.description;
 	}
 	
@@ -31,8 +33,8 @@ public class BayesianModel {
 		return value;
 	}
 
-	public BayesianModel getPartner() {
-		return partner;
+	public ArrayList<BayesianModel> getPartners() {
+		return partners;
 	}
 
 	public String getDescription() {
@@ -43,6 +45,19 @@ public class BayesianModel {
 		this.value = value;
 	}
 
+	public boolean isPartnered(BayesianModel partner) {
+		for(BayesianModel p:partners) {
+			if(p.equals(partner))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public void addPartner(BayesianModel partner) {
+		this.partners.add(partner);
+	}
+	
 	/**
 	 * Sets the parameter as the partner of this object.
 	 * Also attempts to set the partner's partner to this object.
@@ -51,25 +66,26 @@ public class BayesianModel {
 	 * @param partner
 	 * @return
 	 */
-	public BayesianModel setPartner(BayesianModel partner) {
-		if(partner == null){
-			return null;
+	public ArrayList<BayesianModel> setPartners(ArrayList<BayesianModel> partners) {
+		if(partners.isEmpty()){
+			return partners;
 		}
 		
-		this.partner = partner;
-		if(partner.getPartner() == null || !partner.getPartner().equals(this)) {
-			partner.setPartner(this);
+		for(BayesianModel partner : partners) {
+			if(partner.getPartners().isEmpty() || !partner.isPartnered(this)) {
+				partner.addPartner(this);;
 
-			if(Double.isNaN(this.value)) {
-				this.setValue(1.0 - partner.getValue());
+				if(Double.isNaN(this.value)) {
+					this.setValue(1.0 - partner.getValue());
+				}
 			}
 		}
-		
-		return partner;
+				
+		return partners;
 	}
 
-	public boolean hasPartner() {
-		return this.partner != null;
+	public boolean hasPartners() {
+		return !this.partners.isEmpty();
 	}
 	
 	/**
@@ -81,14 +97,14 @@ public class BayesianModel {
 	public static class Builder {
 		private String name, symbol, description;
 		private double value;
-		private BayesianModel partner;
+		private ArrayList<BayesianModel> partners;
 		
 		public Builder(String name) {
 			this.name = name;
 			this.value = Double.NaN;
 			this.symbol = "";
 			this.description = "";
-			this.partner = null;
+			this.partners = new ArrayList<BayesianModel>();
 		}
 		
 		public Builder symbol(String symbol) {
@@ -102,7 +118,7 @@ public class BayesianModel {
 		}
 		
 		public Builder partner(BayesianModel partner) {
-			this.partner = partner;
+			this.partners.add(partner);
 			return this;
 		}
 		

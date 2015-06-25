@@ -9,5 +9,5 @@ import java.util.EventListener;
  * views and data
  */
 public interface ChildUpdateListener extends EventListener {
-	public void updateRequest();
+	public void updateRequest(ChildUpdateEvent e);
 }

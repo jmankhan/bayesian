@@ -10,17 +10,24 @@ import model.BayesianModel;
 import model.HypothesisModel;
 import view.BayesianView;
 import view.HypothesisView;
+import event.ChildUpdateEvent;
+import event.ChildUpdateEvent.Request;
+import event.ChildUpdateListener;
 
 /**
  * @author Jalal
  * @version 6/24/15 This class will track each HypothesisView and
  *          HypothesisModel and update each accordingly
  */
-public class HypothesisController {
+public class HypothesisController implements ChildUpdateListener {
 
 	private ArrayList<BayesianController> childControllers;
-
+	private int offX, offY, maxWidth, maxHeight;
+	private HypothesisView view;
+	
 	public HypothesisController(HypothesisView view, HypothesisModel model) {
+		
+		this.view = view;
 		childControllers = new ArrayList<BayesianController>();
 		setup(view, model);
 
@@ -29,9 +36,8 @@ public class HypothesisController {
 	/**
 	 * Get data through hashmap because the order in which they are added to the
 	 * view is important and the map allows us to access the model we want
-	 * quickly O(N^2) runtime to search for and get each 
-	 * GOD HELP ME 
-	 * I only did this because it will be set up this way across every controller, so the
+	 * quickly O(N^2) runtime to search for and get each GOD HELP ME I only did
+	 * this because it will be set up this way across every controller, so the
 	 * task seemed worthwhile
 	 * 
 	 * @param view
@@ -40,10 +46,10 @@ public class HypothesisController {
 	public void setup(HypothesisView view, HypothesisModel model) {
 		HashMap<String, BayesianModel> dataMap = model.getDataMap();
 
-		int offX = (int) view.getX();
-		int offY = (int) view.getY();
-		int maxWidth = (int) view.getWidth();
-		int maxHeight = (int) view.getHeight();
+		offX = (int) view.getX();
+		offY = (int) view.getY();
+		maxWidth = (int) view.getWidth();
+		maxHeight = (int) view.getHeight();
 
 		Color[] c = Utilities.colors;
 
@@ -54,14 +60,6 @@ public class HypothesisController {
 		view.add(prhV);
 		childControllers.add(new BayesianController(prhV, prh));
 
-		BayesianModel prnh = dataMap.get("prnh");
-		BayesianView prnhV = new BayesianView((int) (offX + prhV.getWidth()),
-				offY, (int) (maxWidth * prnh.getValue()), maxHeight, c[1],
-				ScaleDirection.RIGHT_LEFT);
-		view.add(prnhV);
-		childControllers.add(new BayesianController(prnhV, prnh));
-
-		// within Pr(H)
 		BayesianModel preh = dataMap.get("preh");
 		BayesianView prehV = new BayesianView(offX, (int) (offY + maxHeight
 				* preh.getValue()), (int) prhV.getWidth(), (int) (offY
@@ -77,24 +75,57 @@ public class HypothesisController {
 		view.add(prnehV);
 		childControllers.add(new BayesianController(prnehV, prneh));
 
-		// within Pr(~H)
-		BayesianModel prenh = dataMap.get("prenh");
-		BayesianView prenhV = new BayesianView(
-				(int) (offX + prhV.getWidth()),
-				(int) (offY + maxHeight * prenh.getValue()),
-				(int) (prnhV.getWidth()),
-				(int) (offY + maxHeight - (offY + maxHeight * prenh.getValue())),
-				c[4], ScaleDirection.BOTTOM_TOP);
-		view.add(prenhV);
-		childControllers.add(new BayesianController(prenhV, prenh));
+		Utilities.sliderListeners.add(this);
+	}
 
-		BayesianModel prnenh = dataMap.get("prnenh");
-		BayesianView prnenhV = new BayesianView((int) prnhV.getX(),
-				(int) prnhV.getY(), (int) prnhV.getWidth(),
-				(int) (maxHeight * prnenh.getValue()), c[5],
-				ScaleDirection.TOP_BOTTOM);
-		view.add(prnenhV);
-		childControllers.add(new BayesianController(prnenhV, prnenh));
+	public void handleScaling(BayesianController c) {
+		BayesianView view = c.getView();
+		BayesianModel model = c.getModel();
 
+		if (view.getScaleDirection() == ScaleDirection.TOP_BOTTOM) {
+			view.height = (int) (maxHeight * model.getValue());
+		}
+
+		else if (view.getScaleDirection() == ScaleDirection.BOTTOM_TOP) {
+			double currentHeight = view.getHeight();
+			double newHeight = maxHeight * model.getValue();
+
+			int dy = (int) (newHeight - currentHeight);
+			view.y -= dy;
+			view.height += dy;
+		}
+
+		else if (view.getScaleDirection() == ScaleDirection.LEFT_RIGHT) {
+			view.width = (int) (maxWidth * model.getValue());
+		}
+
+		else if (view.getScaleDirection() == ScaleDirection.RIGHT_LEFT) {
+			double currentWidth = view.getWidth();
+			double newWidth = maxWidth * model.getValue();
+
+			int dx = (int) (newWidth - currentWidth);
+
+			view.x -= dx;
+			view.width += dx;
+		}
+
+		if(model.hasPartners()) {
+			for(BayesianModel partner : model.getPartners()) {
+				partner.setValue(1.0 - model.getValue());
+			}
+		}
+	}
+
+	public HypothesisView getView() {
+		return this.view;
+	}
+	
+	@Override
+	public void updateRequest(ChildUpdateEvent e) {
+		if (e.getRequest() == Request.VALUE_CHANGE) {
+			for (BayesianController c : childControllers) {
+				handleScaling(c);
+			}
+		}
 	}
 }

@@ -1,7 +1,6 @@
 package controller;
 
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -11,6 +10,9 @@ import model.HypothesisModel;
 import view.BayesianView;
 import view.HypothesisHolderView;
 import view.HypothesisView;
+import event.ChildUpdateEvent;
+import event.ChildUpdateEvent.Request;
+import event.ChildUpdateListener;
 
 /**
  * @author Jalal
@@ -21,12 +23,15 @@ import view.HypothesisView;
  * 
  *          TODO:fix second mouse click on same target
  */
-public class HypothesisHolderController {
+public class HypothesisHolderController implements ChildUpdateListener {
 
 	private ArrayList<HypothesisController> childControllers;
-
+	private HypothesisHolderView view;
+	
 	public HypothesisHolderController(HypothesisHolderView view,
 			ArrayList<HypothesisModel> model) {
+		Utilities.hypothesisListeners.add(this);
+		this.view = view;
 		setup(view, model);
 	}
 
@@ -61,6 +66,27 @@ public class HypothesisHolderController {
 		view.addMouseMotionListener(adapter);
 	}
 
+	public void addNewHypothesis() {
+
+		HypothesisView last = childControllers.get(childControllers.size()-1).getView();
+		int offX = last.x + last.width;
+		int offY = last.y;
+		int width = last.width;
+		int height = last.height;
+		
+		HypothesisModel model = new HypothesisModel();
+		HypothesisView view = new HypothesisView(offX, offY, width, height);
+
+		this.view.add(view);
+		childControllers.add(new HypothesisController(view, model));
+	}
+	
+	@Override
+	public void updateRequest(ChildUpdateEvent e) {
+		if(e.getRequest() == Request.NEW_HYPOTHESIS)
+			addNewHypothesis();
+	}
+
 	class BayesianMouseAdapter extends MouseAdapter {
 
 		private Point start;
@@ -80,9 +106,7 @@ public class HypothesisHolderController {
 					BayesianView bv = hv.getChildren().get(i);
 
 					if (bv.contains(start)) {
-						System.out.println("found target");
 						target = bv;
-						target.setSelected(true);
 						dx = (int) (e.getX() - target.getX());
 						dy = (int) (e.getY() - target.getY());
 
@@ -96,9 +120,9 @@ public class HypothesisHolderController {
 		public void mouseDragged(MouseEvent e) {
 			super.mouseDragged(e);
 
-			if (target != null && target.isSelected()) {
+			if (target != null) {
 				target.setLocation((int) (e.getX() - dx), (int) (e.getY() - dy));
-				target.updateListener();
+				target.updateListener(new ChildUpdateEvent(Request.REPAINT));
 			}
 		}
 
@@ -106,19 +130,18 @@ public class HypothesisHolderController {
 		public void mouseReleased(MouseEvent e) {
 			super.mouseReleased(e);
 
-			if (target != null && target.isSelected()) {
+			if (target != null) {
 				target.setLocation(
 						(int) (Utilities.cellSize * Math.round(target.getX()
 								/ Utilities.cellSize)),
 						(int) (Utilities.cellSize * Math.round(target.getY()
 								/ Utilities.cellSize)));
 			}
-			target.setSelected(false);
+			target = null;
 			start = null;
 			dx = 0;
 			dy = 0;
 		}
 
 	}
-
 }

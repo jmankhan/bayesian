@@ -27,13 +27,10 @@ public class HypothesisModel {
 		dataMap = new HashMap<String, BayesianModel>();
 		
 		BayesianModel prh		= new BayesianModel.Builder("prh").symbol("Pr(H)").value(0.5).build();
-		BayesianModel prnh		= new BayesianModel.Builder("prnh").symbol("Pr(~H)").partner(prh).build();
 		BayesianModel preh		= new BayesianModel.Builder("preh").symbol("Pr(E|H)").value(0.5).build();
 		BayesianModel prneh 	= new BayesianModel.Builder("prneh").symbol("Pr(~E|H)").partner(preh).build();
-		BayesianModel prenh 	= new BayesianModel.Builder("prenh").symbol("Pr(E|~H)").value(0.5).build();
-		BayesianModel prnenh	= new BayesianModel.Builder("prnenh").symbol("Pr(~E|~H)").partner(prenh).build();
 		
-		BayesianModel[] data = {prh, prnh, preh, prneh, prenh, prnenh};
+		BayesianModel[] data = {prh, preh, prneh};
 		this.data = data;
 
 		for(BayesianModel m :data) {

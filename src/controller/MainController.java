@@ -2,8 +2,9 @@ package controller;
 
 import java.util.ArrayList;
 
-import misc.Utilities;
 import model.HypothesisModel;
+import view.ControlHolderView;
+import view.ControlView;
 import view.HypothesisHolderView;
 import view.MainView;
 
@@ -22,11 +23,16 @@ public class MainController {
 		//add one hypothesis to h.holder
 		ArrayList<HypothesisModel> models = new ArrayList<HypothesisModel>();
 		models.add(new HypothesisModel());
+
+		ControlHolderView cView = new ControlHolderView();
+		ControlHolderController cController = new ControlHolderController(cView, models);
 		
-		HypothesisHolderView vView = new HypothesisHolderView();
-		HypothesisHolderController  vController = new HypothesisHolderController(vView, models);
-		
-		view.add(vView);
+		HypothesisHolderView hView = new HypothesisHolderView();
+		HypothesisHolderController  hController = new HypothesisHolderController(hView, models);
+
+		view.add(cView);
+		view.add(hView);
+		view.pack();
 		view.revalidate();
 	}
 }

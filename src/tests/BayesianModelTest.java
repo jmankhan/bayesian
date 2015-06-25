@@ -1,6 +1,8 @@
-package model;
+package tests;
 
 import static org.junit.Assert.*;
+import model.BayesianModel;
+import model.BayesianModel.Builder;
 
 import org.junit.After;
 import org.junit.Before;

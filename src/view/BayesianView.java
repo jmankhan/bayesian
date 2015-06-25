@@ -5,6 +5,8 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 
 import misc.ScaleDirection;
+import event.ChildUpdateEvent;
+import event.ChildUpdateEvent.Request;
 import event.ChildUpdateListener;
 
 public class BayesianView extends HypothesisView {
@@ -12,7 +14,6 @@ public class BayesianView extends HypothesisView {
 	private Color color;
 	private ScaleDirection dir;
 	private static ArrayList<ChildUpdateListener> listeners = new ArrayList<ChildUpdateListener>();
-	private boolean isSelected;
 
 	public BayesianView() {
 		super();
@@ -20,7 +21,6 @@ public class BayesianView extends HypothesisView {
 	
 	public BayesianView(int x, int y, int w, int h) {
 		super(x,y,w,h);
-		isSelected = false;
 	}
 	
 	public BayesianView(int x, int y, int w, int h, Color c) {
@@ -38,7 +38,6 @@ public class BayesianView extends HypothesisView {
 		super(x,y,w,h);
 		this.color = c;
 		this.dir = dir;
-		isSelected = false;
 	}
 	
 	public Color getColor() {
@@ -49,28 +48,24 @@ public class BayesianView extends HypothesisView {
 		this.color = color;
 	}
 	
+	public ScaleDirection getScaleDirection() {
+		return this.dir;
+	}
+	
 	public void draw(Graphics2D g) {
 		g.setColor(color);
 		g.fill(this);
-		updateListener();
+		updateListener(new ChildUpdateEvent(Request.REPAINT));
 	}
 	
-	public boolean isSelected() {
-		return isSelected;
-	}
-
-	public void setSelected(boolean isSelected) {
-		this.isSelected = isSelected;
-	}
-
 	public void addUpdateListener(ChildUpdateListener l) {
 		listeners.add(l);
 	}
 	
 	
-	public void updateListener() {
+	public void updateListener(ChildUpdateEvent e) {
 		for(ChildUpdateListener l:listeners) {
-			l.updateRequest();
+			l.updateRequest(e);
 		}
 	}
 }
