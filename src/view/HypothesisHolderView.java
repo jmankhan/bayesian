@@ -20,12 +20,16 @@ public class HypothesisHolderView extends JPanel implements UpdateListener {
 
 	private static final long serialVersionUID = 1L;
 	private ArrayList<HypothesisView> childViews;
-
+	private ArrayList<BayesianControlsView> controls;
+	
+	
 	/**
 	 * Instantiate empty view with no children
 	 */
 	public HypothesisHolderView() {
-		childViews = new ArrayList<HypothesisView>();
+		childViews	= new ArrayList<HypothesisView>();
+		controls	= new ArrayList<BayesianControlsView>();
+		
 		setup();
 	}
 
@@ -77,6 +81,17 @@ public class HypothesisHolderView extends JPanel implements UpdateListener {
 			v.addUpdateListener(this);
 	}
 
+	public void addBCV(BayesianControlsView bcv) {
+		controls.add(bcv);
+		add(bcv);
+	}
+	
+	public void removeBCV() {
+		for(BayesianControlsView bcv : controls) {
+			remove(bcv);
+		}
+		controls.clear();
+	}
 	public ArrayList<HypothesisView> getChildren() {
 		return childViews;
 	}

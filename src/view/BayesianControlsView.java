@@ -11,7 +11,7 @@ import javax.swing.JTextField;
  * This class will contain a slider, textfield, and label to allow the user to manipulate the HypothesisView
  * This will send all user input to the ControlController
  */
-public class ControlView extends JPanel {
+public class BayesianControlsView extends JPanel {
 
 	private static final long serialVersionUID = 7298497374965533616L;
 	
@@ -19,7 +19,7 @@ public class ControlView extends JPanel {
 	private JTextField field;
 	private JSlider slider;
 	
-	public ControlView(String text, double value) {
+	public BayesianControlsView(String text, double value) {
 		
 		label = new JLabel(text);
 		field = new JTextField(Double.toString(value));

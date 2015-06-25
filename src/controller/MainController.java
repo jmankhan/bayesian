@@ -3,8 +3,6 @@ package controller;
 import java.util.ArrayList;
 
 import model.HypothesisModel;
-import view.ControlHolderView;
-import view.ControlView;
 import view.HypothesisHolderView;
 import view.MainView;
 
@@ -24,13 +22,9 @@ public class MainController {
 		ArrayList<HypothesisModel> models = new ArrayList<HypothesisModel>();
 		models.add(new HypothesisModel());
 
-		ControlHolderView cView = new ControlHolderView();
-		ControlHolderController cController = new ControlHolderController(cView, models);
-		
 		HypothesisHolderView hView = new HypothesisHolderView();
 		HypothesisHolderController  hController = new HypothesisHolderController(hView, models);
 
-		view.add(cView);
 		view.add(hView);
 		view.pack();
 		view.revalidate();

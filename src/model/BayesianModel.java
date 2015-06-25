@@ -1,7 +1,5 @@
 package model;
 
-import java.util.ArrayList;
-
 import misc.ScaleDirection;
 
 /**
@@ -13,8 +11,9 @@ import misc.ScaleDirection;
  */
 public class BayesianModel {
 	
-	public static int MAX_WIDTH;
 	public static int MAX_HEIGHT;
+	public static int MAX_WIDTH;
+	public static int CURRENT_WIDTH;
 	
 	private String name, symbol, description;
 	private double value;
@@ -51,6 +50,7 @@ public class BayesianModel {
 	public void setValue(double value) {
 		this.value = value;
 	}
+
 
 	/**
 	 * @author Jalal

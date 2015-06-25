@@ -1,13 +1,20 @@
 package controller;
 
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+
 import misc.Utilities;
 import model.HypothesisModel;
+import view.BayesianControlsView;
 import view.BayesianView;
+import view.HypothesisControlsView;
 import view.HypothesisHolderView;
 import view.HypothesisView;
 import event.UpdateEvent;
@@ -23,23 +30,35 @@ import event.UpdateListener;
  * 
  *          TODO:fix second mouse click on same target
  */
-public class HypothesisHolderController implements UpdateListener {
+public class HypothesisHolderController implements UpdateListener, ActionListener {
 
-	private ArrayList<HypothesisController> childControllers;
 	private HypothesisHolderView view;
-
+	private ArrayList<HypothesisController> childHControllers;
+	private ArrayList<HypothesisModel> models;
+	private HypothesisControlsView hcv;
+	
 	public HypothesisHolderController(HypothesisHolderView view,
-			ArrayList<HypothesisModel> model) {
+			ArrayList<HypothesisModel> models) {
 		Utilities.hypothesisListeners.add(this);
 		this.view = view;
-		setup(view, model);
+		this.models = models;
+		setup();
 	}
 
-	public void setup(HypothesisHolderView view,
-			ArrayList<HypothesisModel> models) {
+	public void setup() {
 
-		childControllers = new ArrayList<HypothesisController>();
+		setupChildHypothesisControllers();
+		setupControls();
+		
+		// add mouselistener
+		BayesianMouseAdapter adapter = new BayesianMouseAdapter();
+		view.addMouseListener(adapter);
+		view.addMouseMotionListener(adapter);
+	}
 
+	public void setupChildHypothesisControllers() {
+		childHControllers = new ArrayList<HypothesisController>();
+		
 		// prepare view array
 		HypothesisView[] hViews = new HypothesisView[models.size()];
 
@@ -55,20 +74,34 @@ public class HypothesisHolderController implements UpdateListener {
 			HypothesisView hView = new HypothesisView(offX, offY, width, height);
 			offX += width;
 
-			childControllers
+			childHControllers
 					.add(new HypothesisController(hView, models.get(i)));
 			view.add(hView);
 		}
-
-		// add mouselistener
-		BayesianMouseAdapter adapter = new BayesianMouseAdapter();
-		view.addMouseListener(adapter);
-		view.addMouseMotionListener(adapter);
+		
 	}
 
+	public void setupControls() {
+		for(HypothesisController hc : childHControllers) {
+			for(BayesianControlsView bcv : hc.getControlsViews()) {
+				view.addBCV(bcv);
+			}
+		}
+		
+		hcv = new HypothesisControlsView();
+		hcv.getButton().addActionListener(this);;
+		hcv.getCombo().addActionListener(this);;
+		
+		view.add(hcv);
+	}
+
+	/**
+	 * Creates a new Hypothesis MVC, adds view to this view, adds controller to child controllers
+	 * @param model
+	 */
 	public void addNewHypothesis(HypothesisModel model) {
 
-		HypothesisView last = childControllers.get(childControllers.size() - 1)
+		HypothesisView last = childHControllers.get(childHControllers.size() - 1)
 				.getView();
 		int offX = last.x + last.width;
 		int offY = last.y;
@@ -78,7 +111,7 @@ public class HypothesisHolderController implements UpdateListener {
 		HypothesisView view = new HypothesisView(offX, offY, width, height);
 
 		this.view.add(view);
-		childControllers.add(new HypothesisController(view, model));
+		childHControllers.add(new HypothesisController(view, model));
 	}
 
 	@Override
@@ -143,5 +176,31 @@ public class HypothesisHolderController implements UpdateListener {
 			dy = 0;
 		}
 
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		
+		if(e.getSource() instanceof JButton) {
+			
+			//create new hypothesis
+			addNewHypothesis(new HypothesisModel());
+			
+			//add new entry to combo
+			JComboBox<String> box = hcv.getCombo();
+			box.addItem("Hypothesis " + (HypothesisModel.hypotheses-1));
+		}
+		
+		else if(e.getSource() instanceof JComboBox) {
+			JComboBox<String> box = (JComboBox<String>) e.getSource();
+			int index = box.getSelectedIndex();
+
+			view.removeBCV();
+			for(BayesianControlsView bcv : childHControllers.get(index).getControlsViews()) {
+				view.addBCV(bcv);
+			}
+			view.revalidate();
+		}
 	}
 }

@@ -26,7 +26,6 @@ public class HypothesisModel {
 	 * Create default data
 	 */
 	public HypothesisModel() {
-
 		dataMap = new HashMap<String, BayesianModel>();
 
 		BayesianModel prh = new BayesianModel.Builder("prh").symbol("Pr(H)")

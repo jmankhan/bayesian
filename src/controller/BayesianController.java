@@ -2,27 +2,49 @@ package controller;
 
 import java.util.ArrayList;
 
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import misc.ScaleDirection;
 import model.BayesianModel;
+import view.BayesianControlsView;
 import view.BayesianView;
 
 /**
+ * This class controls the data for each individual rectangle on the screen. It
+ * represents a distinct and singular probability although many of those
+ * probabilities are related to each other. This class handles those
+ * mathematical relations and is reponsible for each model and view interacting
+ * with its related models/views appropriately
  * 
  * @author Jalal
  * @version 6/25/15
  * 
  */
-public class BayesianController {
+public class BayesianController implements ChangeListener {
 
-	BayesianView view;
-	BayesianModel model;
+	private BayesianView view;
+	private BayesianModel model;
 	private ArrayList<BayesianController> partners;
+	private BayesianControlsView controls;
+	private boolean checkPartners;
 
 	public BayesianController(BayesianView view, BayesianModel model) {
 		this.view = view;
 		this.model = model;
+		this.checkPartners = false;
 		
 		partners = new ArrayList<BayesianController>();
+		setupControlsView();
+	}
+
+	public void setupControlsView() {
+		controls = new BayesianControlsView(model.getName(), model.getValue());
+
+		JSlider slider = controls.getSlider();
+		slider.addChangeListener(this);
 	}
 
 	public BayesianView getView() {
@@ -33,29 +55,52 @@ public class BayesianController {
 		return model;
 	}
 
+	public BayesianControlsView getControls() {
+		return this.controls;
+	}
+
+	public boolean shouldCheckPartners() {
+		return checkPartners;
+	}
+
+
+	public void setCheckPartners(boolean checkPartners) {
+		this.checkPartners = checkPartners;
+	}
+
+
 	/**
 	 * Updates model then view
 	 */
 	public void update() {
 		updateModel();
 		updateView();
-		updatePartners();
 	}
-	
+
 	/**
 	 * Checks partners to update its own values
 	 */
 	private void updateModel() {
-		double total = 0;
-		for(BayesianController p : partners) {
-			total += p.getModel().getValue();
+
+		if (shouldCheckPartners()) { //update partners relative to this model
+			int n = partners.size();
+			
+			for(BayesianController partner:partners) {
+				partner.getModel().setValue(n/2 - model.getValue());
+				partner.setCheckPartners(false);
+				partner.update();
+			}
+		} else { //update this model relative to partners
+			double total = 0;
+			for (BayesianController p : partners) {
+				total += p.getModel().getValue();
+			}
+
+			model.setValue(1.0 - total);
+			setCheckPartners(false);
 		}
-		
-		//if controller has no partners, then don't update by relative values
-		if(total != 0.0)
-			model.setValue(1.0-(total));
 	}
-	
+
 	/**
 	 * Checks model for information and updates views
 	 */
@@ -70,14 +115,14 @@ public class BayesianController {
 	public void addPartner(BayesianController partner) {
 		this.partners.add(partner);
 	}
-	
+
 	/**
 	 * Calls the update method for each BayesianModel that is assigned as a
 	 * partner to this controller
 	 */
 	public void updatePartners() {
 		for (BayesianController partner : partners) {
-			partner.updateView();
+			partner.update();
 		}
 	}
 
@@ -86,29 +131,45 @@ public class BayesianController {
 	 * 
 	 * @param dir
 	 */
-	public void scaleView(ScaleDirection dir) {
+	private void scaleView(ScaleDirection dir) {
+
 		if (dir == ScaleDirection.LEFT_RIGHT) {
 			view.width = (int) (BayesianModel.MAX_WIDTH * model.getValue());
-		} 
-		else if (dir == ScaleDirection.TOP_BOTTOM) {
+			BayesianModel.CURRENT_WIDTH = view.width;
+		} else if (dir == ScaleDirection.TOP_BOTTOM) {
 			view.height = (int) (BayesianModel.MAX_HEIGHT * model.getValue());
-		} 
-		else if (dir == ScaleDirection.RIGHT_LEFT) {
+			view.width = BayesianModel.CURRENT_WIDTH;
+		} else if (dir == ScaleDirection.RIGHT_LEFT) {
 			double currentWidth = view.getWidth();
 			double newWidth = BayesianModel.MAX_WIDTH * model.getValue();
 			int dx = (int) (newWidth - currentWidth);
 
 			view.x -= dx;
 			view.width += dx;
-			
-		} 
-		else if (dir == ScaleDirection.BOTTOM_TOP) {
+
+			BayesianModel.CURRENT_WIDTH = view.width;
+		} else if (dir == ScaleDirection.BOTTOM_TOP) {
 			double currentHeight = view.getHeight();
 			double newHeight = BayesianModel.MAX_HEIGHT * model.getValue();
 			int dy = (int) (newHeight - currentHeight);
 
 			view.y -= dy;
 			view.height += dy;
+			view.width = BayesianModel.CURRENT_WIDTH;
 		}
+
+	}
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		JSlider slider = (JSlider) e.getSource();
+		JTextField field = controls.getField();
+
+		double value = slider.getValue() / 100.0;
+		field.setText("" + value);
+
+		model.setValue(value);
+		setCheckPartners(true);
+		update();
 	}
 }
