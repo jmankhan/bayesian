@@ -7,16 +7,16 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 import misc.Utilities;
-import event.ChildUpdateEvent;
-import event.ChildUpdateEvent.Request;
-import event.ChildUpdateListener;
+import event.UpdateEvent;
+import event.UpdateEvent.Request;
+import event.UpdateListener;
 
 /**
  * @author Jalal
  * @version 6/24/15 This view will display HypothesisViews in a Swing component
  *          (JPanel) and will only add or remove HypothesisViews
  */
-public class HypothesisHolderView extends JPanel implements ChildUpdateListener {
+public class HypothesisHolderView extends JPanel implements UpdateListener {
 
 	private static final long serialVersionUID = 1L;
 	private ArrayList<HypothesisView> childViews;
@@ -83,7 +83,7 @@ public class HypothesisHolderView extends JPanel implements ChildUpdateListener 
 	
 
 	@Override
-	public void updateRequest(ChildUpdateEvent e) {
+	public void updateRequest(UpdateEvent e) {
 		if(e.getRequest() == Request.REPAINT)
 			repaint();
 	}

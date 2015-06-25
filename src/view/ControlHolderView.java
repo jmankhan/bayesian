@@ -1,18 +1,14 @@
 package view;
 
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
 import java.util.ArrayList;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 import misc.Utilities;
-import event.ChildUpdateEvent;
-import event.ChildUpdateEvent.Request;
-import event.ChildUpdateListener;
 
 public class ControlHolderView extends JPanel {
 
@@ -39,16 +35,26 @@ public class ControlHolderView extends JPanel {
 			add(c);
 	}
 	
+	public void removeChildren() {
+		for(ControlView c:childViews) {
+			remove(c);
+		}
+		childViews.clear();
+	}
+	
 	public void setup() {
 		setBackground(Utilities.background);
 		setPreferredSize(Utilities.prefSize);
-		setLayout(new GridLayout(3,3));
+		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
+		PersistentControls pControls = new PersistentControls();
 		addNew = new JButton("+");
 		combo = new JComboBox<String>();
 		
-		add(addNew);
-		add(combo);
+		pControls.add(addNew, BorderLayout.NORTH);
+		pControls.add(combo, BorderLayout.CENTER);
+		
+		add(pControls);
 	}
 
 	public JButton getButton() {
@@ -58,5 +64,19 @@ public class ControlHolderView extends JPanel {
 	public JComboBox<String> getComboBox() {
 		return this.combo;
 	}
-	
+
+	private class PersistentControls extends JPanel {
+		
+		private static final long serialVersionUID = -8991986919768291139L;
+
+		public PersistentControls() {
+			setup();
+		}
+		
+		public void setup() {
+			setBackground(Utilities.background);
+			setPreferredSize(Utilities.prefSize);
+			setLayout(new BorderLayout());
+		}
+	}
 }

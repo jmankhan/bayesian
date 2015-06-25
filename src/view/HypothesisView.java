@@ -4,7 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 
-import event.ChildUpdateListener;
+import event.UpdateListener;
 
 /**
  * @author Jalal

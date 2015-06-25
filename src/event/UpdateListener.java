@@ -8,6 +8,6 @@ import java.util.EventListener;
  * Child controller issues an update request that the parent receives and then updates its
  * views and data
  */
-public interface ChildUpdateListener extends EventListener {
-	public void updateRequest(ChildUpdateEvent e);
+public interface UpdateListener extends EventListener {
+	public void updateRequest(UpdateEvent e);
 }

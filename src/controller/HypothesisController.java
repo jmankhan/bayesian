@@ -10,16 +10,16 @@ import model.BayesianModel;
 import model.HypothesisModel;
 import view.BayesianView;
 import view.HypothesisView;
-import event.ChildUpdateEvent;
-import event.ChildUpdateEvent.Request;
-import event.ChildUpdateListener;
+import event.UpdateEvent;
+import event.UpdateEvent.Request;
+import event.UpdateListener;
 
 /**
  * @author Jalal
  * @version 6/24/15 This class will track each HypothesisView and
  *          HypothesisModel and update each accordingly
  */
-public class HypothesisController implements ChildUpdateListener {
+public class HypothesisController implements UpdateListener {
 
 	private ArrayList<BayesianController> childControllers;
 	private int offX, offY, maxWidth, maxHeight;
@@ -121,7 +121,7 @@ public class HypothesisController implements ChildUpdateListener {
 	}
 	
 	@Override
-	public void updateRequest(ChildUpdateEvent e) {
+	public void updateRequest(UpdateEvent e) {
 		if (e.getRequest() == Request.VALUE_CHANGE) {
 			for (BayesianController c : childControllers) {
 				handleScaling(c);

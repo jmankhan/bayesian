@@ -7,9 +7,9 @@ import javax.swing.event.ChangeListener;
 import misc.Utilities;
 import model.BayesianModel;
 import view.ControlView;
-import event.ChildUpdateEvent;
-import event.ChildUpdateEvent.Request;
-import event.ChildUpdateListener;
+import event.UpdateEvent;
+import event.UpdateEvent.Request;
+import event.UpdateListener;
 
 /**
  * @author Jalal
@@ -17,7 +17,7 @@ import event.ChildUpdateListener;
  * Receive input from user via the ControlView and change the data accordingly. Notify ControlHolderView and request an update
  *
  */
-public class ControlController implements ChildUpdateListener {
+public class ControlController implements UpdateListener {
 
 	private ControlView view;
 	private BayesianModel model;
@@ -34,7 +34,7 @@ public class ControlController implements ChildUpdateListener {
 				JSlider source = (JSlider) e.getSource();
 				model.setValue(source.getValue()/100.0);
 				
-				ChildUpdateEvent event = new ChildUpdateEvent(Request.VALUE_CHANGE, model.getValue());
+				UpdateEvent event = new UpdateEvent(Request.VALUE_CHANGE, model.getValue());
 				updateRequest(event);
 			}
 			
@@ -51,8 +51,8 @@ public class ControlController implements ChildUpdateListener {
 
 	
 	@Override
-	public void updateRequest(ChildUpdateEvent e) {
-		for(ChildUpdateListener l:Utilities.sliderListeners) {
+	public void updateRequest(UpdateEvent e) {
+		for(UpdateListener l:Utilities.sliderListeners) {
 			l.updateRequest(e);
 		}
 	}

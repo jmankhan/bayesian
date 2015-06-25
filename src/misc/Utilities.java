@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
 
-import event.ChildUpdateListener;
+import event.UpdateListener;
 
 public class Utilities {
 
@@ -13,6 +13,6 @@ public class Utilities {
 	public static Dimension prefSize = new Dimension(1280, 360);
 	public static Color[] colors = {Color.black, Color.yellow, Color.BLUE, Color.GREEN, Color.red, Color.orange};
 	
-	public static ArrayList<ChildUpdateListener> sliderListeners = new ArrayList<ChildUpdateListener>();
-	public static ArrayList<ChildUpdateListener> hypothesisListeners = new ArrayList<ChildUpdateListener>();
+	public static ArrayList<UpdateListener> sliderListeners = new ArrayList<UpdateListener>();
+	public static ArrayList<UpdateListener> hypothesisListeners = new ArrayList<UpdateListener>();
 }

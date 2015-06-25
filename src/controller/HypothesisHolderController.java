@@ -10,9 +10,9 @@ import model.HypothesisModel;
 import view.BayesianView;
 import view.HypothesisHolderView;
 import view.HypothesisView;
-import event.ChildUpdateEvent;
-import event.ChildUpdateEvent.Request;
-import event.ChildUpdateListener;
+import event.UpdateEvent;
+import event.UpdateEvent.Request;
+import event.UpdateListener;
 
 /**
  * @author Jalal
@@ -23,7 +23,7 @@ import event.ChildUpdateListener;
  * 
  *          TODO:fix second mouse click on same target
  */
-public class HypothesisHolderController implements ChildUpdateListener {
+public class HypothesisHolderController implements UpdateListener {
 
 	private ArrayList<HypothesisController> childControllers;
 	private HypothesisHolderView view;
@@ -66,7 +66,7 @@ public class HypothesisHolderController implements ChildUpdateListener {
 		view.addMouseMotionListener(adapter);
 	}
 
-	public void addNewHypothesis() {
+	public void addNewHypothesis(HypothesisModel model) {
 
 		HypothesisView last = childControllers.get(childControllers.size()-1).getView();
 		int offX = last.x + last.width;
@@ -74,7 +74,6 @@ public class HypothesisHolderController implements ChildUpdateListener {
 		int width = last.width;
 		int height = last.height;
 		
-		HypothesisModel model = new HypothesisModel();
 		HypothesisView view = new HypothesisView(offX, offY, width, height);
 
 		this.view.add(view);
@@ -82,9 +81,9 @@ public class HypothesisHolderController implements ChildUpdateListener {
 	}
 	
 	@Override
-	public void updateRequest(ChildUpdateEvent e) {
+	public void updateRequest(UpdateEvent e) {
 		if(e.getRequest() == Request.NEW_HYPOTHESIS)
-			addNewHypothesis();
+			addNewHypothesis(e.getHypothesisModel());
 	}
 
 	class BayesianMouseAdapter extends MouseAdapter {
@@ -122,7 +121,7 @@ public class HypothesisHolderController implements ChildUpdateListener {
 
 			if (target != null) {
 				target.setLocation((int) (e.getX() - dx), (int) (e.getY() - dy));
-				target.updateListener(new ChildUpdateEvent(Request.REPAINT));
+				target.updateListener(new UpdateEvent(Request.REPAINT));
 			}
 		}
 
