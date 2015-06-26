@@ -59,9 +59,6 @@ public class HypothesisHolderController implements ActionListener {
 	public void setupChildHypothesisControllers() {
 		childHControllers = new ArrayList<HypothesisController>();
 
-		// prepare view array
-		HypothesisView[] hViews = new HypothesisView[models.size()];
-
 		// initialize constants to place each view, attempt to make is
 		// square-ish
 		int offX = Utilities.prefSize.width / HypothesisModel.hypotheses;
@@ -71,7 +68,7 @@ public class HypothesisHolderController implements ActionListener {
 
 		// add each child view horizontally to this view and pass it to its
 		// controller
-		for (int i = 0; i < hViews.length; i++) {
+		for (int i = 0; i < models.size(); i++) {
 			HypothesisView hView = new HypothesisView(offX, offY, width, height);
 			offX += width;
 
@@ -79,14 +76,13 @@ public class HypothesisHolderController implements ActionListener {
 					.add(new HypothesisController(hView, models.get(i)));
 			view.add(hView);
 		}
-
 	}
 
 	public void setupControls() {
 		for (HypothesisController hc : childHControllers) {
 			for (BayesianController bc : hc.getChildControllers()) {
 				bc.addChangeListener(new BayesianChangeListener(bc));
-				
+
 				view.addBCV(bc.getControls());
 			}
 		}
@@ -99,6 +95,27 @@ public class HypothesisHolderController implements ActionListener {
 	}
 
 	/**
+	 * Updates each peer model then view
+	 */
+	public void updatePeers() {
+		// associate with peers, collect all values
+		double total = 0.0;
+		for (HypothesisController hc : childHControllers) {
+			hc.getChildControllers().get(0)
+					.addPeer(hc.getChildControllers().get(0));
+			total += hc.getChildControllers().get(0).getModel().getValue();
+		}
+
+		// update each peer based on collected total
+		for (HypothesisController hc : childHControllers) {
+			BayesianController bc = hc.getChildControllers().get(0);
+			bc.getModel().setValue(bc.getModel().getValue() / total);
+			bc.updateView();
+		}
+
+	}
+
+	/**
 	 * Creates a new Hypothesis MVC, adds view to this view, adds controller to
 	 * child controllers
 	 * 
@@ -106,19 +123,27 @@ public class HypothesisHolderController implements ActionListener {
 	 */
 	public void addNewHypothesis(HypothesisModel model) {
 
+		// setup view
 		HypothesisView last = childHControllers.get(
 				childHControllers.size() - 1).getView();
-		
-		//may change starting location
-		int offX = last.x + last.width/2;
+
+		// may change starting location
+		int offX = last.x + last.width / 2;
 		int offY = last.y;
 		int width = last.width;
 		int height = last.height;
 
 		HypothesisView view = new HypothesisView(offX, offY, width, height);
 
+		// add view to viewholder
 		this.view.add(view);
-		childHControllers.add(new HypothesisController(view, model));
+
+		// setup controller
+		HypothesisController newhc = new HypothesisController(view, model);
+
+		updatePeers();
+
+		childHControllers.add(newhc);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -141,7 +166,8 @@ public class HypothesisHolderController implements ActionListener {
 			int index = box.getSelectedIndex();
 
 			view.removeBCV();
-			for (BayesianController bc : childHControllers.get(index).getChildControllers()) {
+			for (BayesianController bc : childHControllers.get(index)
+					.getChildControllers()) {
 				bc.addChangeListener(new BayesianChangeListener(bc));
 				view.addBCV(bc.getControls());
 			}
@@ -149,7 +175,6 @@ public class HypothesisHolderController implements ActionListener {
 		}
 	}
 
-	
 	class BayesianMouseAdapter extends MouseAdapter {
 
 		private Point start;
@@ -161,10 +186,10 @@ public class HypothesisHolderController implements ActionListener {
 			super.mousePressed(e);
 			start = e.getPoint();
 
-			for(HypothesisController hc : childHControllers) {
-				for(int i=hc.getChildControllers().size()-1; i>= 0; i--) {
+			for (HypothesisController hc : childHControllers) {
+				for (int i = hc.getChildControllers().size() - 1; i >= 0; i--) {
 					BayesianController bc = hc.getChildControllers().get(i);
-					if(bc.getView().contains(start)) {
+					if (bc.getView().contains(start)) {
 						target = bc;
 						dx = (int) (e.getX() - target.getView().getX());
 						dy = (int) (e.getY() - target.getView().getY());
@@ -180,7 +205,8 @@ public class HypothesisHolderController implements ActionListener {
 			super.mouseDragged(e);
 
 			if (target != null) {
-				target.getView().setLocation((int) (e.getX() - dx), (int) (e.getY() - dy));
+				target.getView().setLocation((int) (e.getX() - dx),
+						(int) (e.getY() - dy));
 				view.repaint();
 			}
 		}
@@ -191,12 +217,12 @@ public class HypothesisHolderController implements ActionListener {
 
 			if (target != null) {
 				target.getView().setLocation(
-						(int) (Utilities.cellSize * Math.round(target.getView().getX()
-								/ Utilities.cellSize)),
-						(int) (Utilities.cellSize * Math.round(target.getView().getY()
-								/ Utilities.cellSize)));
+						(int) (Utilities.cellSize * Math.round(target.getView()
+								.getX() / Utilities.cellSize)),
+						(int) (Utilities.cellSize * Math.round(target.getView()
+								.getY() / Utilities.cellSize)));
 			}
-			
+
 			target = null;
 			start = null;
 			dx = 0;
@@ -207,26 +233,28 @@ public class HypothesisHolderController implements ActionListener {
 
 	class BayesianChangeListener implements ChangeListener {
 		private BayesianController controller;
-		
+
 		public BayesianChangeListener(BayesianController c) {
 			this.controller = c;
 		}
-		
+
 		@Override
 		public void stateChanged(ChangeEvent e) {
 			JSlider slider = (JSlider) e.getSource();
 			JTextField field = controller.getControls().getField();
-			
+
 			double value = slider.getValue() / 100.0;
 			field.setText("" + value);
 
 			controller.getModel().setValue(value);
 			controller.setCheckPartners(true);
 			controller.update();
+
+			updatePeers();
 			
-			//an hour of refactoring just to make this one statement
+			// an hour of refactoring just to make this one statement
 			view.repaint();
 		}
-		
+
 	}
 }

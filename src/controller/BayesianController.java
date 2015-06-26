@@ -1,15 +1,12 @@
 package controller;
 
-import java.awt.Graphics;
 import java.util.ArrayList;
 
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import misc.ScaleDirection;
 import model.BayesianModel;
+import model.HypothesisModel;
 import view.BayesianControlsView;
 import view.BayesianView;
 
@@ -28,36 +25,48 @@ public class BayesianController {
 
 	private BayesianView view;
 	private BayesianModel model;
-	private ArrayList<BayesianController> partners;
 	private BayesianControlsView controls;
 	private boolean checkPartners;
 	private int maxWidth, maxHeight;
-	
+
+	/**
+	 * List of controllers that will be impacted within the same hypothesis as
+	 * this
+	 */
+	private ArrayList<BayesianController> partners;
+
+	/**
+	 * List of controllers that will be impacted outside of this hypothesis
+	 */
+	private ArrayList<BayesianController> peers;
+
 	public BayesianController(BayesianView view, BayesianModel model) {
 		this.view = view;
 		this.model = model;
 		this.checkPartners = false;
 
 		partners = new ArrayList<BayesianController>();
+		peers = new ArrayList<BayesianController>();
+
 		setupMax();
 		setupControlsView();
 	}
 
-	public void setupControlsView() {
+	private void setupControlsView() {
 		controls = new BayesianControlsView(model.getName(), model.getValue());
 	}
 
-	public void setupMax() {
-		if(model.getScaleDirection() == ScaleDirection.LEFT_RIGHT || model.getScaleDirection() == ScaleDirection.RIGHT_LEFT) {
-			maxWidth = (int) (view.width/model.getValue());
+	private void setupMax() {
+		if (model.getScaleDirection() == ScaleDirection.LEFT_RIGHT
+				|| model.getScaleDirection() == ScaleDirection.RIGHT_LEFT) {
+			maxWidth = (int) (view.width / model.getValue());
 			maxHeight = view.height;
-		}
-		else {
+		} else {
 			maxWidth = view.width;
-			maxHeight = (int) (view.height/model.getValue());
+			maxHeight = (int) (view.height / model.getValue());
 		}
 	}
-	
+
 	public BayesianView getView() {
 		return view;
 	}
@@ -70,12 +79,12 @@ public class BayesianController {
 		return this.controls;
 	}
 
+	public ArrayList<BayesianController> getPeers() {
+		return this.peers;
+	}
+
 	public void addChangeListener(ChangeListener cl) {
 		controls.getSlider().addChangeListener(cl);
-	}
-	
-	public boolean shouldCheckPartners() {
-		return checkPartners;
 	}
 
 	public void setCheckPartners(boolean checkPartners) {
@@ -85,9 +94,47 @@ public class BayesianController {
 	public void setMaxWidth(int mw) {
 		this.maxWidth = mw;
 	}
-	
+
 	public void setMaxHeight(int mh) {
 		this.maxHeight = mh;
+	}
+
+	/**
+	 * Checks if the parameter is already included in the partner list
+	 * 
+	 * @param bc
+	 * @return
+	 */
+	public boolean isPartnered(BayesianController bc) {
+		for (BayesianController partner : partners) {
+			if (partner.equals(bc))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if the parameter is already included in the peer list
+	 * 
+	 * @param bc
+	 * @return
+	 */
+	public boolean isPeered(BayesianController bc) {
+		for (BayesianController peer : peers) {
+			if (peer.equals(bc))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Flag signalling if the controller should update based on its partners
+	 * values or its given value
+	 * 
+	 * @return
+	 */
+	public boolean shouldCheckPartners() {
+		return checkPartners;
 	}
 
 	/**
@@ -103,15 +150,15 @@ public class BayesianController {
 	 */
 	private void updateModel() {
 
-		if (shouldCheckPartners()) { //update partners relative to this model
+		if (shouldCheckPartners()) { // update partners relative to this model
 			int n = partners.size();
-			
-			for(BayesianController partner:partners) {
-				partner.getModel().setValue(n/2 - model.getValue());
+
+			for (BayesianController partner : partners) {
+				partner.getModel().setValue(n / 2 - model.getValue());
 				partner.setCheckPartners(false);
 				partner.update();
 			}
-		} else { //update this model relative to partners
+		} else { // update this model relative to partners
 			double total = 0;
 			for (BayesianController p : partners) {
 				total += p.getModel().getValue();
@@ -125,26 +172,29 @@ public class BayesianController {
 	/**
 	 * Checks model for information and updates views
 	 */
-	private void updateView() {
+	public void updateView() {
 		scaleView(model.getScaleDirection());
 	}
 
-	public void setPartners(ArrayList<BayesianController> partners) {
-		this.partners = partners;
-	}
-
+	/**
+	 * Adds a new partner to this controller's list of partners. Checks if it is
+	 * already in the list, in which case it is not added again
+	 * 
+	 * @param partner
+	 */
 	public void addPartner(BayesianController partner) {
-		this.partners.add(partner);
+		if (!this.isPartnered(partner))
+			this.partners.add(partner);
 	}
 
 	/**
-	 * Calls the update method for each BayesianModel that is assigned as a
-	 * partner to this controller
+	 * Adds a new peer to this controller's list of peers. Checks if the peer is
+	 * already in the list, in which case it is not added again
+	 * 
+	 * @param peer
 	 */
-	public void updatePartners() {
-		for (BayesianController partner : partners) {
-			partner.update();
-		}
+	public void addPeer(BayesianController peer) {
+		this.peers.add(peer);
 	}
 
 	/**
@@ -156,14 +206,17 @@ public class BayesianController {
 
 		if (dir == ScaleDirection.LEFT_RIGHT) {
 			view.width = (int) (maxWidth * model.getValue());
-			for(BayesianController bc : partners) {
+
+			// update partners
+			for (BayesianController bc : partners) {
 				bc.setMaxWidth(view.width);
 				bc.setCheckPartners(false);
 				bc.update();
 			}
+
 		} else if (dir == ScaleDirection.TOP_BOTTOM) {
 			view.height = (int) (maxHeight * model.getValue());
-			view.width  = maxWidth;
+			view.width = maxWidth;
 		} else if (dir == ScaleDirection.RIGHT_LEFT) {
 			double currentWidth = view.getWidth();
 			double newWidth = maxWidth * model.getValue();
@@ -172,12 +225,12 @@ public class BayesianController {
 			view.x -= dx;
 			view.width += dx;
 
-			for(BayesianController bc : partners) {
+			for (BayesianController bc : partners) {
 				bc.setMaxWidth(view.width);
 				bc.setCheckPartners(false);
 				bc.update();
 			}
-			
+
 		} else if (dir == ScaleDirection.BOTTOM_TOP) {
 			double currentHeight = view.getHeight();
 			double newHeight = maxHeight * model.getValue();

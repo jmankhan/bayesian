@@ -24,6 +24,7 @@ public class BayesianControlsView extends JPanel {
 		label = new JLabel(text);
 		field = new JTextField(Double.toString(value));
 		slider = new JSlider(JSlider.HORIZONTAL);
+		slider.setValue((int) (value*100)); 
 		
 		add(label);
 		add(field);
