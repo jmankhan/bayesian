@@ -10,3 +10,5 @@ Each hierarchy component has an associated model, view, and controller. There is
 interface that is in the process of being refactored out since it is not really necessary.
 
 Note: you can drag around the rectangles with your mouse. You can add new hypotheses, but not remove any (yet)
+
+The lack of tests causes me no pain.

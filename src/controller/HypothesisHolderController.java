@@ -98,11 +98,14 @@ public class HypothesisHolderController implements ActionListener {
 	 * Updates each peer model then view
 	 */
 	public void updatePeers() {
-		// associate with peers, collect all values
+		
+		//skip if there is only one hypothesis
+		if(childHControllers.size() == 1)
+			return;
+		
+		//collect all values among peers
 		double total = 0.0;
 		for (HypothesisController hc : childHControllers) {
-			hc.getChildControllers().get(0)
-					.addPeer(hc.getChildControllers().get(0));
 			total += hc.getChildControllers().get(0).getModel().getValue();
 		}
 
