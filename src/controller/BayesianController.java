@@ -30,13 +30,15 @@ public class BayesianController implements ChangeListener {
 	private ArrayList<BayesianController> partners;
 	private BayesianControlsView controls;
 	private boolean checkPartners;
-
+	private int maxWidth, maxHeight;
+	
 	public BayesianController(BayesianView view, BayesianModel model) {
 		this.view = view;
 		this.model = model;
 		this.checkPartners = false;
-		
+
 		partners = new ArrayList<BayesianController>();
+		setupMax();
 		setupControlsView();
 	}
 
@@ -47,6 +49,17 @@ public class BayesianController implements ChangeListener {
 		slider.addChangeListener(this);
 	}
 
+	public void setupMax() {
+		if(model.getScaleDirection() == ScaleDirection.LEFT_RIGHT || model.getScaleDirection() == ScaleDirection.RIGHT_LEFT) {
+			maxWidth = (int) (view.width/model.getValue());
+			maxHeight = view.height;
+		}
+		else {
+			maxWidth = view.width;
+			maxHeight = (int) (view.height/model.getValue());
+		}
+	}
+	
 	public BayesianView getView() {
 		return view;
 	}
@@ -134,28 +147,24 @@ public class BayesianController implements ChangeListener {
 	private void scaleView(ScaleDirection dir) {
 
 		if (dir == ScaleDirection.LEFT_RIGHT) {
-			view.width = (int) (BayesianModel.MAX_WIDTH * model.getValue());
-			BayesianModel.CURRENT_WIDTH = view.width;
+			view.width = (int) (maxWidth * model.getValue());
 		} else if (dir == ScaleDirection.TOP_BOTTOM) {
-			view.height = (int) (BayesianModel.MAX_HEIGHT * model.getValue());
-			view.width = BayesianModel.CURRENT_WIDTH;
+			view.height = (int) (maxHeight * model.getValue());
 		} else if (dir == ScaleDirection.RIGHT_LEFT) {
 			double currentWidth = view.getWidth();
-			double newWidth = BayesianModel.MAX_WIDTH * model.getValue();
+			double newWidth = maxWidth * model.getValue();
 			int dx = (int) (newWidth - currentWidth);
 
 			view.x -= dx;
 			view.width += dx;
 
-			BayesianModel.CURRENT_WIDTH = view.width;
 		} else if (dir == ScaleDirection.BOTTOM_TOP) {
 			double currentHeight = view.getHeight();
-			double newHeight = BayesianModel.MAX_HEIGHT * model.getValue();
+			double newHeight = maxHeight * model.getValue();
 			int dy = (int) (newHeight - currentHeight);
 
 			view.y -= dy;
 			view.height += dy;
-			view.width = BayesianModel.CURRENT_WIDTH;
 		}
 
 	}

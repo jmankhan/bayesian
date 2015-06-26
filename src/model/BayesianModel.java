@@ -11,10 +11,6 @@ import misc.ScaleDirection;
  */
 public class BayesianModel {
 	
-	public static int MAX_HEIGHT;
-	public static int MAX_WIDTH;
-	public static int CURRENT_WIDTH;
-	
 	private String name, symbol, description;
 	private double value;
 	private ScaleDirection scaleDirection;
