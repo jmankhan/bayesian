@@ -1,5 +1,6 @@
 package controller;
 
+import java.awt.Graphics;
 import java.util.ArrayList;
 
 import javax.swing.JSlider;
@@ -23,7 +24,7 @@ import view.BayesianView;
  * @version 6/26/15
  * 
  */
-public class BayesianController implements ChangeListener {
+public class BayesianController {
 
 	private BayesianView view;
 	private BayesianModel model;
@@ -44,9 +45,6 @@ public class BayesianController implements ChangeListener {
 
 	public void setupControlsView() {
 		controls = new BayesianControlsView(model.getName(), model.getValue());
-
-		JSlider slider = controls.getSlider();
-		slider.addChangeListener(this);
 	}
 
 	public void setupMax() {
@@ -72,6 +70,10 @@ public class BayesianController implements ChangeListener {
 		return this.controls;
 	}
 
+	public void addChangeListener(ChangeListener cl) {
+		controls.getSlider().addChangeListener(cl);
+	}
+	
 	public boolean shouldCheckPartners() {
 		return checkPartners;
 	}
@@ -185,19 +187,5 @@ public class BayesianController implements ChangeListener {
 			view.height += dy;
 			view.width = maxWidth;
 		}
-
-	}
-
-	@Override
-	public void stateChanged(ChangeEvent e) {
-		JSlider slider = (JSlider) e.getSource();
-		JTextField field = controls.getField();
-
-		double value = slider.getValue() / 100.0;
-		field.setText("" + value);
-
-		model.setValue(value);
-		setCheckPartners(true);
-		update();
 	}
 }

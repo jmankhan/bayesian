@@ -9,17 +9,17 @@ import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import misc.Utilities;
 import model.HypothesisModel;
 import view.BayesianControlsView;
-import view.BayesianView;
 import view.HypothesisControlsView;
 import view.HypothesisHolderView;
 import view.HypothesisView;
-import event.UpdateEvent;
-import event.UpdateEvent.Request;
-import event.UpdateListener;
 
 /**
  * This controller will update the HypothesisHolderView but will not directly
@@ -31,8 +31,7 @@ import event.UpdateListener;
  * @version 6/24/15
  * 
  */
-public class HypothesisHolderController implements UpdateListener,
-		ActionListener {
+public class HypothesisHolderController implements ActionListener {
 
 	private HypothesisHolderView view;
 	private ArrayList<HypothesisController> childHControllers;
@@ -41,7 +40,6 @@ public class HypothesisHolderController implements UpdateListener,
 
 	public HypothesisHolderController(HypothesisHolderView view,
 			ArrayList<HypothesisModel> models) {
-		Utilities.hypothesisListeners.add(this);
 		this.view = view;
 		this.models = models;
 		setup();
@@ -86,16 +84,16 @@ public class HypothesisHolderController implements UpdateListener,
 
 	public void setupControls() {
 		for (HypothesisController hc : childHControllers) {
-			for (BayesianControlsView bcv : hc.getControlsViews()) {
-				view.addBCV(bcv);
+			for (BayesianController bc : hc.getChildControllers()) {
+				bc.addChangeListener(new BayesianChangeListener(bc));
+				
+				view.addBCV(bc.getControls());
 			}
 		}
 
 		hcv = new HypothesisControlsView();
 		hcv.getButton().addActionListener(this);
-		;
 		hcv.getCombo().addActionListener(this);
-		;
 
 		view.add(hcv);
 	}
@@ -110,7 +108,9 @@ public class HypothesisHolderController implements UpdateListener,
 
 		HypothesisView last = childHControllers.get(
 				childHControllers.size() - 1).getView();
-		int offX = last.x + last.width;
+		
+		//may change starting location
+		int offX = last.x + last.width/2;
 		int offY = last.y;
 		int width = last.width;
 		int height = last.height;
@@ -119,70 +119,6 @@ public class HypothesisHolderController implements UpdateListener,
 
 		this.view.add(view);
 		childHControllers.add(new HypothesisController(view, model));
-	}
-
-	@Override
-	public void updateRequest(UpdateEvent e) {
-		if (e.getRequest() == Request.NEW_HYPOTHESIS)
-			addNewHypothesis(e.getHypothesisModel());
-	}
-
-	class BayesianMouseAdapter extends MouseAdapter {
-
-		private Point start;
-		private BayesianView target;
-		private int dx, dy;
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			super.mousePressed(e);
-			start = e.getPoint();
-
-			HypothesisHolderView hhv = (HypothesisHolderView) e.getSource();
-			for (HypothesisView hv : hhv.getChildren()) {
-				// go backwards so the top level view gets selected first
-				// in case of overlap
-				for (int i = hv.getChildren().size() - 1; i >= 0; i--) {
-					BayesianView bv = hv.getChildren().get(i);
-
-					if (bv.contains(start)) {
-						target = bv;
-						dx = (int) (e.getX() - target.getX());
-						dy = (int) (e.getY() - target.getY());
-
-						return;
-					}
-				}
-			}
-		}
-
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			super.mouseDragged(e);
-
-			if (target != null) {
-				target.setLocation((int) (e.getX() - dx), (int) (e.getY() - dy));
-				target.updateListener(new UpdateEvent(Request.REPAINT));
-			}
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			super.mouseReleased(e);
-
-			if (target != null) {
-				target.setLocation(
-						(int) (Utilities.cellSize * Math.round(target.getX()
-								/ Utilities.cellSize)),
-						(int) (Utilities.cellSize * Math.round(target.getY()
-								/ Utilities.cellSize)));
-			}
-			target = null;
-			start = null;
-			dx = 0;
-			dy = 0;
-		}
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -197,6 +133,7 @@ public class HypothesisHolderController implements UpdateListener,
 			// add new entry to combo
 			JComboBox<String> box = hcv.getCombo();
 			box.addItem("Hypothesis " + (HypothesisModel.hypotheses - 1));
+			view.repaint();
 		}
 
 		else if (e.getSource() instanceof JComboBox) {
@@ -204,11 +141,92 @@ public class HypothesisHolderController implements UpdateListener,
 			int index = box.getSelectedIndex();
 
 			view.removeBCV();
-			for (BayesianControlsView bcv : childHControllers.get(index)
-					.getControlsViews()) {
-				view.addBCV(bcv);
+			for (BayesianController bc : childHControllers.get(index).getChildControllers()) {
+				bc.addChangeListener(new BayesianChangeListener(bc));
+				view.addBCV(bc.getControls());
 			}
 			view.revalidate();
 		}
+	}
+
+	
+	class BayesianMouseAdapter extends MouseAdapter {
+
+		private Point start;
+		private BayesianController target;
+		private int dx, dy;
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			super.mousePressed(e);
+			start = e.getPoint();
+
+			for(HypothesisController hc : childHControllers) {
+				for(int i=hc.getChildControllers().size()-1; i>= 0; i--) {
+					BayesianController bc = hc.getChildControllers().get(i);
+					if(bc.getView().contains(start)) {
+						target = bc;
+						dx = (int) (e.getX() - target.getView().getX());
+						dy = (int) (e.getY() - target.getView().getY());
+
+						return;
+					}
+				}
+			}
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			super.mouseDragged(e);
+
+			if (target != null) {
+				target.getView().setLocation((int) (e.getX() - dx), (int) (e.getY() - dy));
+				view.repaint();
+			}
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			super.mouseReleased(e);
+
+			if (target != null) {
+				target.getView().setLocation(
+						(int) (Utilities.cellSize * Math.round(target.getView().getX()
+								/ Utilities.cellSize)),
+						(int) (Utilities.cellSize * Math.round(target.getView().getY()
+								/ Utilities.cellSize)));
+			}
+			
+			target = null;
+			start = null;
+			dx = 0;
+			dy = 0;
+		}
+
+	}
+
+	class BayesianChangeListener implements ChangeListener {
+		private BayesianController controller;
+		
+		public BayesianChangeListener(BayesianController c) {
+			this.controller = c;
+		}
+		
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			JSlider slider = (JSlider) e.getSource();
+			JTextField field = controller.getControls().getField();
+			
+			double value = slider.getValue() / 100.0;
+			field.setText("" + value);
+
+			controller.getModel().setValue(value);
+			controller.setCheckPartners(true);
+			controller.update();
+			
+			//an hour of refactoring just to make this one statement
+			view.repaint();
+		}
+		
 	}
 }

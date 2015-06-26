@@ -4,27 +4,19 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import misc.Utilities;
 import model.BayesianModel;
 import model.HypothesisModel;
-import view.BayesianView;
 import view.BayesianControlsView;
+import view.BayesianView;
 import view.HypothesisView;
-import event.UpdateEvent;
-import event.UpdateEvent.Request;
-import event.UpdateListener;
 
 /**
  * This class will track each HypothesisView and HypothesisModel and update each accordingly
  * @author Jalal
  * @version 6/26/15 
  */
-public class HypothesisController implements UpdateListener {
+public class HypothesisController {
 
 	private ArrayList<BayesianController> childControllers;
 	private ArrayList<BayesianControlsView> controlsViews;
@@ -54,9 +46,6 @@ public class HypothesisController implements UpdateListener {
 
 		setupChildControllers();
 		setupControlsView();
-
-		// add this to global slider listeners
-		Utilities.sliderListeners.add(this);
 	}
 
 	public void setupChildControllers() {
@@ -122,16 +111,11 @@ public class HypothesisController implements UpdateListener {
 		return this.model;
 	}
 
+	public ArrayList<BayesianController> getChildControllers() {
+		return this.childControllers;
+	}
+	
 	public ArrayList<BayesianControlsView> getControlsViews() {
 		return this.controlsViews;
-	}
-
-	@Override
-	public void updateRequest(UpdateEvent e) {
-		if (e.getRequest() == Request.VALUE_CHANGE) {
-			for (BayesianController c : childControllers) {
-				c.update();
-			}
-		}
 	}
 }

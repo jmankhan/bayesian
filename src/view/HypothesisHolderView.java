@@ -7,16 +7,13 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 import misc.Utilities;
-import event.UpdateEvent;
-import event.UpdateEvent.Request;
-import event.UpdateListener;
 
 /**
  * @author Jalal
  * @version 6/24/15 This view will display HypothesisViews in a Swing component
  *          (JPanel) and will only add or remove HypothesisViews
  */
-public class HypothesisHolderView extends JPanel implements UpdateListener {
+public class HypothesisHolderView extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private ArrayList<HypothesisView> childViews;
@@ -77,8 +74,6 @@ public class HypothesisHolderView extends JPanel implements UpdateListener {
 	 */
 	public void add(HypothesisView view) {
 		childViews.add(view);
-		for (BayesianView v : view.getChildren())
-			v.addUpdateListener(this);
 	}
 
 	public void addBCV(BayesianControlsView bcv) {
@@ -96,10 +91,4 @@ public class HypothesisHolderView extends JPanel implements UpdateListener {
 		return childViews;
 	}
 	
-
-	@Override
-	public void updateRequest(UpdateEvent e) {
-		if(e.getRequest() == Request.REPAINT)
-			repaint();
-	}
 }
