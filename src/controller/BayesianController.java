@@ -20,7 +20,7 @@ import view.BayesianView;
  * with its related models/views appropriately
  * 
  * @author Jalal
- * @version 6/25/15
+ * @version 6/26/15
  * 
  */
 public class BayesianController implements ChangeListener {
@@ -76,11 +76,17 @@ public class BayesianController implements ChangeListener {
 		return checkPartners;
 	}
 
-
 	public void setCheckPartners(boolean checkPartners) {
 		this.checkPartners = checkPartners;
 	}
 
+	public void setMaxWidth(int mw) {
+		this.maxWidth = mw;
+	}
+	
+	public void setMaxHeight(int mh) {
+		this.maxHeight = mh;
+	}
 
 	/**
 	 * Updates model then view
@@ -148,8 +154,14 @@ public class BayesianController implements ChangeListener {
 
 		if (dir == ScaleDirection.LEFT_RIGHT) {
 			view.width = (int) (maxWidth * model.getValue());
+			for(BayesianController bc : partners) {
+				bc.setMaxWidth(view.width);
+				bc.setCheckPartners(false);
+				bc.update();
+			}
 		} else if (dir == ScaleDirection.TOP_BOTTOM) {
 			view.height = (int) (maxHeight * model.getValue());
+			view.width  = maxWidth;
 		} else if (dir == ScaleDirection.RIGHT_LEFT) {
 			double currentWidth = view.getWidth();
 			double newWidth = maxWidth * model.getValue();
@@ -158,6 +170,12 @@ public class BayesianController implements ChangeListener {
 			view.x -= dx;
 			view.width += dx;
 
+			for(BayesianController bc : partners) {
+				bc.setMaxWidth(view.width);
+				bc.setCheckPartners(false);
+				bc.update();
+			}
+			
 		} else if (dir == ScaleDirection.BOTTOM_TOP) {
 			double currentHeight = view.getHeight();
 			double newHeight = maxHeight * model.getValue();
@@ -165,6 +183,7 @@ public class BayesianController implements ChangeListener {
 
 			view.y -= dy;
 			view.height += dy;
+			view.width = maxWidth;
 		}
 
 	}

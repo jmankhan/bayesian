@@ -20,9 +20,9 @@ import event.UpdateEvent.Request;
 import event.UpdateListener;
 
 /**
+ * This class will track each HypothesisView and HypothesisModel and update each accordingly
  * @author Jalal
- * @version 6/24/15 This class will track each HypothesisView and
- *          HypothesisModel and update each accordingly
+ * @version 6/26/15 
  */
 public class HypothesisController implements UpdateListener {
 
@@ -97,7 +97,9 @@ public class HypothesisController implements UpdateListener {
 		// assign partners
 		prnehC.addPartner(prehC);
 		prehC.addPartner(prnehC);
-
+		prhC.addPartner(prehC);
+		prhC.addPartner(prnehC);
+		
 		// add all to childControllers
 		childControllers.add(prhC);
 		childControllers.add(prehC);

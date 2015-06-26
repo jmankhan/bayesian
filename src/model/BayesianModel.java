@@ -3,11 +3,10 @@ package model;
 import misc.ScaleDirection;
 
 /**
- * 
+ * This class will model a variable's data in the Bayesian Theorem, holding identifiers and mutable values
+ * It will be updated by its controller only 
  * @author Jalal
  * @version 06/24/15
- * This class will model a variable's data in the Bayesian Theorem, holding identifiers and mutable values 
- * I made the mistake of allowing the model to assign its own partners when that is really the controller's responsibility
  */
 public class BayesianModel {
 	

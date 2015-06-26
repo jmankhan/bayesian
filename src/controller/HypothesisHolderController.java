@@ -22,21 +22,23 @@ import event.UpdateEvent.Request;
 import event.UpdateListener;
 
 /**
- * @author Jalal
- * @version 6/24/15 This controller will update the HypothesisHolderView but
- *          will not directly issue commands It will also instantiate the
- *          HypothesisControllers that belong to it and pass them their views
- *          and data It will receive events from them and pass them along
+ * This controller will update the HypothesisHolderView but will not directly
+ * issue commands It will also instantiate the HypothesisControllers that belong
+ * to it and pass them their views and data It will receive events from them and
+ * pass them along
  * 
- *          TODO:fix second mouse click on same target
+ * @author Jalal
+ * @version 6/24/15
+ * 
  */
-public class HypothesisHolderController implements UpdateListener, ActionListener {
+public class HypothesisHolderController implements UpdateListener,
+		ActionListener {
 
 	private HypothesisHolderView view;
 	private ArrayList<HypothesisController> childHControllers;
 	private ArrayList<HypothesisModel> models;
 	private HypothesisControlsView hcv;
-	
+
 	public HypothesisHolderController(HypothesisHolderView view,
 			ArrayList<HypothesisModel> models) {
 		Utilities.hypothesisListeners.add(this);
@@ -49,7 +51,7 @@ public class HypothesisHolderController implements UpdateListener, ActionListene
 
 		setupChildHypothesisControllers();
 		setupControls();
-		
+
 		// add mouselistener
 		BayesianMouseAdapter adapter = new BayesianMouseAdapter();
 		view.addMouseListener(adapter);
@@ -58,11 +60,12 @@ public class HypothesisHolderController implements UpdateListener, ActionListene
 
 	public void setupChildHypothesisControllers() {
 		childHControllers = new ArrayList<HypothesisController>();
-		
+
 		// prepare view array
 		HypothesisView[] hViews = new HypothesisView[models.size()];
 
-		// initialize constants to place each view, attempt to make is square-ish
+		// initialize constants to place each view, attempt to make is
+		// square-ish
 		int offX = Utilities.prefSize.width / HypothesisModel.hypotheses;
 		int offY = Utilities.prefSize.height / 4;
 		int height = Utilities.prefSize.height / 2;
@@ -78,31 +81,35 @@ public class HypothesisHolderController implements UpdateListener, ActionListene
 					.add(new HypothesisController(hView, models.get(i)));
 			view.add(hView);
 		}
-		
+
 	}
 
 	public void setupControls() {
-		for(HypothesisController hc : childHControllers) {
-			for(BayesianControlsView bcv : hc.getControlsViews()) {
+		for (HypothesisController hc : childHControllers) {
+			for (BayesianControlsView bcv : hc.getControlsViews()) {
 				view.addBCV(bcv);
 			}
 		}
-		
+
 		hcv = new HypothesisControlsView();
-		hcv.getButton().addActionListener(this);;
-		hcv.getCombo().addActionListener(this);;
-		
+		hcv.getButton().addActionListener(this);
+		;
+		hcv.getCombo().addActionListener(this);
+		;
+
 		view.add(hcv);
 	}
 
 	/**
-	 * Creates a new Hypothesis MVC, adds view to this view, adds controller to child controllers
+	 * Creates a new Hypothesis MVC, adds view to this view, adds controller to
+	 * child controllers
+	 * 
 	 * @param model
 	 */
 	public void addNewHypothesis(HypothesisModel model) {
 
-		HypothesisView last = childHControllers.get(childHControllers.size() - 1)
-				.getView();
+		HypothesisView last = childHControllers.get(
+				childHControllers.size() - 1).getView();
 		int offX = last.x + last.width;
 		int offY = last.y;
 		int width = last.width;
@@ -181,23 +188,24 @@ public class HypothesisHolderController implements UpdateListener, ActionListene
 	@SuppressWarnings("unchecked")
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
-		if(e.getSource() instanceof JButton) {
-			
-			//create new hypothesis
+
+		if (e.getSource() instanceof JButton) {
+
+			// create new hypothesis
 			addNewHypothesis(new HypothesisModel());
-			
-			//add new entry to combo
+
+			// add new entry to combo
 			JComboBox<String> box = hcv.getCombo();
-			box.addItem("Hypothesis " + (HypothesisModel.hypotheses-1));
+			box.addItem("Hypothesis " + (HypothesisModel.hypotheses - 1));
 		}
-		
-		else if(e.getSource() instanceof JComboBox) {
+
+		else if (e.getSource() instanceof JComboBox) {
 			JComboBox<String> box = (JComboBox<String>) e.getSource();
 			int index = box.getSelectedIndex();
 
 			view.removeBCV();
-			for(BayesianControlsView bcv : childHControllers.get(index).getControlsViews()) {
+			for (BayesianControlsView bcv : childHControllers.get(index)
+					.getControlsViews()) {
 				view.addBCV(bcv);
 			}
 			view.revalidate();
