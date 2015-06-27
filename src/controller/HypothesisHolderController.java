@@ -59,7 +59,7 @@ public class HypothesisHolderController implements ActionListener {
 	public void setupChildHypothesisControllers() {
 		childHControllers = new ArrayList<HypothesisController>();
 
-		// initialize constants to place each view, attempt to make is
+		// initialize constants to place each view, attempt to make it
 		// square-ish
 		int offX = Utilities.prefSize.width / HypothesisModel.hypotheses;
 		int offY = Utilities.prefSize.height / 4;
@@ -95,13 +95,9 @@ public class HypothesisHolderController implements ActionListener {
 	}
 
 	/**
-	 * Updates each peer model then view
+	 * Updates each peered model and view with values relative to each other
 	 */
-	public void updatePeers() {
-		
-		//skip if there is only one hypothesis
-		if(childHControllers.size() == 1)
-			return;
+	public void updateAllPeers() {
 		
 		//collect all values among peers
 		double total = 0.0;
@@ -144,9 +140,9 @@ public class HypothesisHolderController implements ActionListener {
 		// setup controller
 		HypothesisController newhc = new HypothesisController(view, model);
 
-		updatePeers();
-
 		childHControllers.add(newhc);
+		updateAllPeers();
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -172,6 +168,7 @@ public class HypothesisHolderController implements ActionListener {
 			for (BayesianController bc : childHControllers.get(index)
 					.getChildControllers()) {
 				bc.addChangeListener(new BayesianChangeListener(bc));
+				bc.updateControls();
 				view.addBCV(bc.getControls());
 			}
 			view.revalidate();
@@ -243,18 +240,20 @@ public class HypothesisHolderController implements ActionListener {
 
 		@Override
 		public void stateChanged(ChangeEvent e) {
+			
 			JSlider slider = (JSlider) e.getSource();
-			JTextField field = controller.getControls().getField();
-
 			double value = slider.getValue() / 100.0;
-			field.setText("" + value);
 
 			controller.getModel().setValue(value);
 			controller.setCheckPartners(true);
 			controller.update();
 
-			updatePeers();
+			for(BayesianController c: controller.getPartners()) {
+				c.getControls().getSlider().setValue((int) (c.getModel().getValue()*100));
+			}
 			
+			updateAllPeers();
+
 			// an hour of refactoring just to make this one statement
 			view.repaint();
 		}

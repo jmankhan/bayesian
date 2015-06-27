@@ -1,5 +1,7 @@
 package view;
 
+import java.text.DecimalFormat;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -20,12 +22,17 @@ public class BayesianControlsView extends JPanel {
 	private JSlider slider;
 	
 	public BayesianControlsView(String text, double value) {
+
+		DecimalFormat df = new DecimalFormat("#.00");
 		
 		label = new JLabel(text);
-		field = new JTextField(Double.toString(value));
+		field = new JTextField(2);
+		field.setText(df.format(value));
+		field.setEditable(false);
 		slider = new JSlider(JSlider.HORIZONTAL);
 		slider.setValue((int) (value*100)); 
 		
+
 		add(label);
 		add(field);
 		add(slider);

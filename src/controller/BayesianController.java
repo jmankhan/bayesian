@@ -1,12 +1,14 @@
 package controller;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
+import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 
 import misc.ScaleDirection;
 import model.BayesianModel;
-import model.HypothesisModel;
 import view.BayesianControlsView;
 import view.BayesianView;
 
@@ -48,6 +50,8 @@ public class BayesianController {
 		partners = new ArrayList<BayesianController>();
 		peers = new ArrayList<BayesianController>();
 
+		this.view.setText(model.getSymbol());
+		
 		setupMax();
 		setupControlsView();
 	}
@@ -79,6 +83,10 @@ public class BayesianController {
 		return this.controls;
 	}
 
+	public ArrayList<BayesianController> getPartners() {
+		return this.partners;
+	}
+	
 	public ArrayList<BayesianController> getPeers() {
 		return this.peers;
 	}
@@ -176,8 +184,17 @@ public class BayesianController {
 		scaleView(model.getScaleDirection());
 	}
 
+	public void updateControls() {
+		JSlider slider = controls.getSlider();
+		JTextField field = controls.getField();
+		double value = model.getValue();
+		
+		slider.setValue((int)(value*100));
+		field.setText(new DecimalFormat("#.00").format(value));
+	}
+	
 	/**
-	 * Adds a new partner to this controller's list of partners. Checks if it is
+	 * Adds a new partner to this controller's list0 of partners. Checks if it is
 	 * already in the list, in which case it is not added again
 	 * 
 	 * @param partner

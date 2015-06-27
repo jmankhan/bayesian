@@ -27,7 +27,7 @@ public class HypothesisModel {
 	 */
 	public HypothesisModel() {
 		dataMap = new HashMap<String, BayesianModel>();
-
+		
 		BayesianModel prh = new BayesianModel.Builder("prh").symbol("Pr(H)")
 				.value(1.0).scaleDirection(ScaleDirection.LEFT_RIGHT).build();
 		BayesianModel preh = new BayesianModel.Builder("preh")
@@ -43,8 +43,9 @@ public class HypothesisModel {
 		for (BayesianModel m : data) {
 			dataMap.put(m.getName(), m);
 		}
-
+		
 		hypotheses++;
+
 	}
 
 	public BayesianModel[] getData() {
