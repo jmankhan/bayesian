@@ -9,14 +9,14 @@ import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import misc.Utilities;
 import model.HypothesisModel;
-import view.BayesianControlsView;
 import view.HypothesisControlsView;
 import view.HypothesisHolderView;
 import view.HypothesisView;
@@ -37,7 +37,8 @@ public class HypothesisHolderController implements ActionListener {
 	private ArrayList<HypothesisController> childHControllers;
 	private ArrayList<HypothesisModel> models;
 	private HypothesisControlsView hcv;
-
+	private JPopupMenu pop;
+	
 	public HypothesisHolderController(HypothesisHolderView view,
 			ArrayList<HypothesisModel> models) {
 		this.view = view;
@@ -49,7 +50,8 @@ public class HypothesisHolderController implements ActionListener {
 
 		setupChildHypothesisControllers();
 		setupControls();
-
+		setupPopupMenu();
+		
 		// add mouselistener
 		BayesianMouseAdapter adapter = new BayesianMouseAdapter();
 		view.addMouseListener(adapter);
@@ -95,8 +97,19 @@ public class HypothesisHolderController implements ActionListener {
 	}
 
 	/**
+	 * You can call JComponent.setJPopupMenu(menu) but it sets it per component, 
+	 * and we want per Rectangle functionality =[
+	 */
+	public void setupPopupMenu() {
+		pop = new JPopupMenu();
+		JMenuItem delete = new JMenuItem("Delete Hypothesis");
+		delete.addActionListener(this);
+		pop.add(delete);
+	}
+	/**
 	 * Updates each peered model and view with values relative to each other
 	 */
+	
 	public void updateAllPeers() {
 		
 		//collect all values among peers
@@ -145,10 +158,21 @@ public class HypothesisHolderController implements ActionListener {
 
 	}
 
+	/**
+	 * Remove a hypothesis from the holder
+	 * @param controller
+	 */
+	public void deleteHypothesis(HypothesisController controller) {
+		view.getChildren().remove(controller.getView());
+		childHControllers.remove(controller);
+		view.repaint();
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
+		//add new hypothesis on button click
 		if (e.getSource() instanceof JButton) {
 
 			// create new hypothesis
@@ -159,7 +183,8 @@ public class HypothesisHolderController implements ActionListener {
 			box.addItem("Hypothesis " + (HypothesisModel.hypotheses - 1));
 			view.repaint();
 		}
-
+		
+		//select hypothesis controls to display
 		else if (e.getSource() instanceof JComboBox) {
 			JComboBox<String> box = (JComboBox<String>) e.getSource();
 			int index = box.getSelectedIndex();
@@ -173,6 +198,12 @@ public class HypothesisHolderController implements ActionListener {
 			}
 			view.revalidate();
 		}
+		
+		//delete selected hypothesis
+		else if(e.getSource() instanceof JMenuItem) {
+			JMenuItem delete = (JMenuItem) e.getSource();
+			
+		}
 	}
 
 	class BayesianMouseAdapter extends MouseAdapter {
@@ -180,24 +211,38 @@ public class HypothesisHolderController implements ActionListener {
 		private Point start;
 		private BayesianController target;
 		private int dx, dy;
-
+		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			super.mousePressed(e);
 			start = e.getPoint();
 
+			
+			//cycle through all views on screen to find the selected one
 			for (HypothesisController hc : childHControllers) {
 				for (int i = hc.getChildControllers().size() - 1; i >= 0; i--) {
+					
+					//obtain selected rectangle
 					BayesianController bc = hc.getChildControllers().get(i);
 					if (bc.getView().contains(start)) {
+						//save selected view's controller
 						target = bc;
+						
+						//i need to add this here as well due to cross-platform compatibility 
+						if(e.getModifiers() == MouseEvent.BUTTON3) {
+							showPopupMenu(e.getX(), e.getY());
+						}
+
+						//save some measurements of view relative to mouse
 						dx = (int) (e.getX() - target.getView().getX());
 						dy = (int) (e.getY() - target.getView().getY());
 
+						//exit loop (and method) when the correct view is found
 						return;
 					}
 				}
 			}
+			
 		}
 
 		@Override
@@ -215,7 +260,14 @@ public class HypothesisHolderController implements ActionListener {
 		public void mouseReleased(MouseEvent e) {
 			super.mouseReleased(e);
 
+			if(target == null && pop.isVisible())
+				pop.setVisible(false);
+			
 			if (target != null) {
+				if(e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+					showPopupMenu(e.getX(), e.getY());
+				}
+					
 				target.getView().setLocation(
 						(int) (Utilities.cellSize * Math.round(target.getView()
 								.getX() / Utilities.cellSize)),
@@ -227,6 +279,11 @@ public class HypothesisHolderController implements ActionListener {
 			start = null;
 			dx = 0;
 			dy = 0;
+		}
+		
+		public void showPopupMenu(int x, int y) {
+			pop.setVisible(true);
+			pop.setLocation(x, y+25);
 		}
 
 	}

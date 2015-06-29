@@ -15,7 +15,7 @@ import misc.Utilities;
  */
 public class HypothesisHolderView extends JPanel {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 6066438463862386692L;
 	private ArrayList<HypothesisView> childViews;
 	private ArrayList<BayesianControlsView> controls;
 	
@@ -76,17 +76,29 @@ public class HypothesisHolderView extends JPanel {
 		childViews.add(view);
 	}
 
+	/**
+	 * Add a bayesian controls view
+	 * @param bcv
+	 */
 	public void addBCV(BayesianControlsView bcv) {
 		controls.add(bcv);
 		add(bcv);
 	}
 	
+	/**
+	 * Remove a bayesian controls view
+	 */
 	public void removeBCV() {
 		for(BayesianControlsView bcv : controls) {
 			remove(bcv);
 		}
 		controls.clear();
 	}
+
+	/**
+	 * Get this view's hypothesis children
+	 * @return
+	 */
 	public ArrayList<HypothesisView> getChildren() {
 		return childViews;
 	}
