@@ -10,4 +10,4 @@ Each hierarchy component has an associated model, view, and controller.
 
 Note: you can drag around the rectangles with your mouse. You can add new hypotheses, but not remove any (yet)
 
-The lack of tests causes me no pain.
+One day I will add tests.
